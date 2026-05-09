@@ -9,7 +9,7 @@ Windows-specific patches and build infrastructure.
 
 ## Repository Structure
 
-\`\`\`
+\\\
 crossfire-windows/
 ├── AGENTS.md                   ← This file
 ├── README.md                   ← Project overview and quick start
@@ -28,7 +28,7 @@ crossfire-windows/
 └── docs/
     ├── build-instructions.md   ← Step-by-step build guide
     └── gpl-compatibility.md    ← GPLv2 license compatibility analysis
-\`\`\`
+\\\
 
 ## Build Environment
 
