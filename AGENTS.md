@@ -43,12 +43,12 @@ crossfire-windows/
 
 | Purpose | Path |
 |---|---|
-| This repo | \`/home/leaf/crossfire-windows/\` |
-| Crossfire source | \`/home/leaf/crossfire/crossfire-server/\` |
-| Build staging | \`/home/leaf/crossfire-staging/\` |
-| MSYS2 UCRT64 root | \`C:\msys64\ucrt64\\\` |
-| Install target | \`C:\Program Files\Crossfire Server\\\` |
-| Player data | \`C:\ProgramData\Crossfire Server\\\` |
+| This repo | `/home/leaf/crossfire-windows/` |
+| Crossfire source | `/home/leaf/crossfire/crossfire-server/` |
+| Build staging | `/home/leaf/crossfire-staging/` |
+| MSYS2 UCRT64 root | `C:\msys64\ucrt64\` |
+| Install target | `C:\Program Files\Crossfire Server\` |
+| Player data | `C:\ProgramData\Crossfire Server\` |
 
 ## Key Build Artifacts
 
