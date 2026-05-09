@@ -1,0 +1,13 @@
+diff --git a/server/win32.cpp b/server/win32.cpp
+index 4c43b5ed9..457311ba9 100644
+--- a/server/win32.cpp
++++ b/server/win32.cpp
+@@ -157,7 +157,7 @@ void rewinddir(DIR *dir_Info) {
+  */
+ 
+ /** Will be set to FALSE when the server should stop running because the service is turned off. */
+-int bRunning;
++int bRunning = 1;
+ 
+ /** Status when the server is started as a service. */
+ SERVICE_STATUS m_ServiceStatus;

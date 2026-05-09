@@ -1,0 +1,22 @@
+diff --git a/socket/loop.cpp b/socket/loop.cpp
+index 4c1d177a9..18aeaba6c 100644
+--- a/socket/loop.cpp
++++ b/socket/loop.cpp
+@@ -599,8 +599,17 @@ void do_server(void) {
+             } else if (errno == EBADF) {
+                 check_all_fds();
+             }
++#ifdef WIN32
++            int wsa_err = WSAGetLastError();
++            if (wsa_err == 10004) { return; }
++            if (wsa_err == 10038) { check_all_fds(); return; }
++            if (wsa_err == 10022) { check_all_fds(); return; }
++            LOG(llevError, "select failed: Winsock error %d\n", wsa_err);
++            return;
++#else
+             LOG(llevError, "select failed: %s\n", strerror(errno));
+             return;
++#endif
+         } else if (!pollret) {
+             return;
+         }
