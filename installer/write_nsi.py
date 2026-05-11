@@ -172,7 +172,9 @@ Section "Crossfire Server" SecMain
 
     CreateDirectory "$SMPROGRAMS\\Crossfire Server"
     CreateShortcut "$SMPROGRAMS\\Crossfire Server\\Start Server.lnk" \\
-        "$INSTDIR\\start-server.bat" "" "$INSTDIR\\bin\\crossfire-server.exe"
+        "$WINDIR\\system32\\cmd.exe" \\
+        '/c start "Crossfire Server" "$INSTDIR\\start-server.bat"' \\
+        "$INSTDIR\\bin\\crossfire-server.exe" 0
     CreateShortcut "$SMPROGRAMS\\Crossfire Server\\Uninstall.lnk" \\
         "$INSTDIR\\uninstall.exe"
 
