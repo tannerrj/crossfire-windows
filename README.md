@@ -31,11 +31,8 @@ for Windows 10/11 (64-bit) using MSYS2 UCRT64.
 
 | Patch | Description |
 |---|---|
-
 | `output_file.cpp.diff` | Fixes atomic file rename using `MoveFileExA()` |
-
 | `plugins.cpp.diff` | Replaces POSIX dir scan with Win32 `FindFirstFileA()` |
-
 | `init.cpp.diff` | Fixes Winsock socket initialization and error reporting |
 | `loop.cpp.diff` | Fixes `select()` error handling for Winsock |
 
