@@ -31,11 +31,11 @@ for Windows 10/11 (64-bit) using MSYS2 UCRT64.
 
 | Patch | Description |
 |---|---|
-| `object.cpp.diff` | Adds `ffs()` implementation for MinGW |
+
 | `output_file.cpp.diff` | Fixes atomic file rename using `MoveFileExA()` |
-| `cfpython.cpp.diff` | Adds missing `CF_PLUGIN` export to `initPlugin()` |
+
 | `plugins.cpp.diff` | Replaces POSIX dir scan with Win32 `FindFirstFileA()` |
-| `win32.cpp.diff` | Fixes `bRunning` uninitialized variable |
+
 | `init.cpp.diff` | Fixes Winsock socket initialization and error reporting |
 | `loop.cpp.diff` | Fixes `select()` error handling for Winsock |
 

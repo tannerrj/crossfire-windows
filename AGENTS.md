@@ -15,11 +15,11 @@ crossfire-windows/
 ├── README.md                   ← Project overview and quick start
 ├── build.sh                    ← Automated build script (MSYS2 UCRT64)
 ├── patches/                    ← Git diff patches for Windows compatibility
-│   ├── object.cpp.diff         ← Adds ffs() for MinGW
+
 │   ├── output_file.cpp.diff    ← Fixes atomic rename with MoveFileExA()
-│   ├── cfpython.cpp.diff       ← Adds CF_PLUGIN export to initPlugin()
+
 │   ├── plugins.cpp.diff        ← Win32 directory scan + absolute paths
-│   ├── win32.cpp.diff          ← Fixes bRunning uninitialized variable
+
 │   ├── init.cpp.diff           ← Fixes Winsock initialization/error reporting
 │   └── loop.cpp.diff           ← Fixes select() error handling for Winsock
 ├── installer/
@@ -94,13 +94,10 @@ installer these would need to be bundled.
 
 Apply patches in this order to avoid conflicts:
 
-1. `object.cpp.diff`
-2. `win32.cpp.diff`
 3. `init.cpp.diff`
 4. `loop.cpp.diff`
 5. `output_file.cpp.diff`
 6. `plugins.cpp.diff`
-7. `cfpython.cpp.diff`
 
 ## Runtime Dependencies (bundled in installer)
 
