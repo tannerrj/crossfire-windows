@@ -6,6 +6,7 @@
 set -e
 
 SRCDIR="$HOME/crossfire/crossfire-server"
+STAGINGDIR="$HOME/crossfire-staging/usr/local/crossfire"
 PATCHDIR="$(dirname "$0")/patches"
 INSTALLERDIR="$(dirname "$0")/installer"
 BUILDDIR="$HOME"
@@ -15,16 +16,16 @@ echo ""
 
 # Step 1: Clone source if not present
 if [ ! -d "$SRCDIR" ]; then
-    echo "[1/8] Cloning Crossfire server source..."
+    echo "[1/9] Cloning Crossfire server source..."
     mkdir -p "$HOME/crossfire"
     git clone https://git.code.sf.net/p/crossfire/crossfire-server \
         "$SRCDIR"
 else
-    echo "[1/8] Source already present at $SRCDIR, skipping clone."
+    echo "[1/9] Source already present at $SRCDIR, skipping clone."
 fi
 
 # Step 2: Apply patches
-echo "[2/8] Applying patches..."
+echo "[2/9] Applying patches..."
 cd "$SRCDIR"
 for patch in "$PATCHDIR"/*.diff; do
     name=$(basename "$patch")
@@ -34,18 +35,18 @@ for patch in "$PATCHDIR"/*.diff; do
 done
 
 # Step 3: Configure
-echo "[3/8] Running configure..."
+echo "[3/9] Running configure..."
 ./autogen.sh 2>/dev/null || true
 ./configure --prefix="/usr/local/crossfire" \
     --disable-shared --enable-static \
     CXXFLAGS="-D_GNU_SOURCE" CFLAGS="-D_GNU_SOURCE"
 
 # Step 4: Build server
-echo "[4/8] Building server..."
+echo "[4/9] Building server..."
 make -j$(nproc)
 
 # Step 5: Build crossfire.dll
-echo "[5/8] Building crossfire.dll..."
+echo "[5/9] Building crossfire.dll..."
 mkdir -p /tmp/server_objs
 cd /tmp/server_objs
 ar x "$SRCDIR/server/.libs/libserver.a"
@@ -73,7 +74,7 @@ g++ -shared \
 echo "  crossfire.dll built: $(ls -lh crossfire.dll | awk '{print $5}')"
 
 # Step 6: Build plugin DLLs
-echo "[6/8] Building plugin DLLs..."
+echo "[6/9] Building plugin DLLs..."
 cd "$SRCDIR/plugins/cfanim"
 g++ -shared \
     -D_GNU_SOURCE \
@@ -101,16 +102,28 @@ g++ -shared \
     -o cfpython.dll
 echo "  cfpython.dll built."
 
-# Step 7: Generate NSIS installer script
-echo "[7/8] Generating NSIS installer script..."
+# Step 7: Sync staging directory with freshly built binaries
+echo "[7/9] Syncing staging directory..."
+cp -v "$SRCDIR/server/crossfire-server.exe" \
+    "$STAGINGDIR/bin/crossfire-server.exe"
+cp -v "$SRCDIR/crossfire.dll" \
+    "$STAGINGDIR/bin/crossfire.dll" 2>/dev/null || true
+cp -v "$SRCDIR/plugins/cfanim/cfanim.dll" \
+    "$STAGINGDIR/lib/crossfire/plugins/cfanim.dll" 2>/dev/null || true
+cp -v "$SRCDIR/plugins/cfpython/cfpython.dll" \
+    "$STAGINGDIR/lib/crossfire/plugins/cfpython.dll" 2>/dev/null || true
+echo "  Staging directory synced."
+
+# Step 8: Generate NSIS installer script
+echo "[8/9] Generating NSIS installer script..."
 cd "$BUILDDIR"
 GITVER="git-$(git -C "$SRCDIR" log --format='%h' -1 | cut -c1-7)"
 echo "  Version: $GITVER"
 python3 "$INSTALLERDIR/write_nsi.py" "$GITVER" \
     "$(cygpath -m "$BUILDDIR/crossfire-installer.nsi")"
 
-# Step 8: Build installer
-echo "[8/8] Building installer..."
+# Step 9: Build installer
+echo "[9/9] Building installer..."
 makensis crossfire-installer.nsi
 cp "CrossfireServer-${GITVER}-Setup.exe" /c/Users/leaf/Desktop/
 echo ""
