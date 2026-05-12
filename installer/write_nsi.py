@@ -170,6 +170,24 @@ Section "Crossfire Server" SecMain
         "DisplayVersion" "${APP_VERSION}"
     WriteUninstaller "$INSTDIR\\uninstall.exe"
 
+    ; Add registry entries for Windows Search indexing
+    WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\CrossfireServer" \\
+        "DisplayIcon" "$INSTDIR\\bin\\crossfire-server.exe,0"
+    WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\CrossfireServer" \\
+        "InstallLocation" "$INSTDIR"
+    WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\CrossfireServer" \\
+        "Comments" "Crossfire RPG Server for Windows"
+    WriteRegDWORD HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\CrossfireServer" \\
+        "NoModify" 1
+    WriteRegDWORD HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\CrossfireServer" \\
+        "NoRepair" 1
+
+    ; App Paths entry so Windows Search can find the application
+    WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\crossfire-server.exe" \\
+        "" "$INSTDIR\\bin\\crossfire-server.exe"
+    WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\crossfire-server.exe" \\
+        "Path" "$INSTDIR\\bin"
+
     ; Create shortcuts in All Users Start Menu
     SetShellVarContext all
     CreateDirectory "$SMPROGRAMS\\Crossfire Server"
@@ -213,6 +231,7 @@ Section "Uninstall"
     ExecWait 'netsh advfirewall firewall delete rule name="Crossfire Server"'
 
     DeleteRegKey HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\CrossfireServer"
+    DeleteRegKey HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\App Paths\\crossfire-server.exe"
     DeleteRegKey HKLM "Software\\Crossfire Server"
 
 SectionEnd
