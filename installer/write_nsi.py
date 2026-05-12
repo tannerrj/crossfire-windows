@@ -170,6 +170,7 @@ Section "Crossfire Server" SecMain
         "DisplayVersion" "${APP_VERSION}"
     WriteUninstaller "$INSTDIR\\uninstall.exe"
 
+    SetShellVarContext all
     CreateDirectory "$SMPROGRAMS\\Crossfire Server"
     CreateShortcut "$SMPROGRAMS\\Crossfire Server\\Start Server.lnk" \\
         "$WINDIR\\system32\\cmd.exe" \\
@@ -182,6 +183,7 @@ SectionEnd
 
 Section "Uninstall"
 
+    SetShellVarContext all
     Delete "$INSTDIR\\uninstall.exe"
     Delete "$INSTDIR\\start-server.bat"
     RMDir /r "$INSTDIR\\bin"
