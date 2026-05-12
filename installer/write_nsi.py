@@ -170,7 +170,18 @@ Section "Crossfire Server" SecMain
         "DisplayVersion" "${APP_VERSION}"
     WriteUninstaller "$INSTDIR\\uninstall.exe"
 
+    ; Create shortcuts in All Users Start Menu
     SetShellVarContext all
+    CreateDirectory "$SMPROGRAMS\\Crossfire Server"
+    CreateShortcut "$SMPROGRAMS\\Crossfire Server\\Start Server.lnk" \\
+        "$WINDIR\\system32\\cmd.exe" \\
+        '/c start "Crossfire Server" "$INSTDIR\\start-server.bat"' \\
+        "$INSTDIR\\bin\\crossfire-server.exe" 0
+    CreateShortcut "$SMPROGRAMS\\Crossfire Server\\Uninstall.lnk" \\
+        "$INSTDIR\\uninstall.exe"
+
+    ; Also create shortcuts in current user Start Menu for search indexing
+    SetShellVarContext current
     CreateDirectory "$SMPROGRAMS\\Crossfire Server"
     CreateShortcut "$SMPROGRAMS\\Crossfire Server\\Start Server.lnk" \\
         "$WINDIR\\system32\\cmd.exe" \\
@@ -192,6 +203,11 @@ Section "Uninstall"
     RMDir /r "$INSTDIR\\share"
     RMDir "$INSTDIR"
 
+    Delete "$SMPROGRAMS\\Crossfire Server\\Start Server.lnk"
+    Delete "$SMPROGRAMS\\Crossfire Server\\Uninstall.lnk"
+    RMDir "$SMPROGRAMS\\Crossfire Server"
+
+    SetShellVarContext current
     Delete "$SMPROGRAMS\\Crossfire Server\\Start Server.lnk"
     Delete "$SMPROGRAMS\\Crossfire Server\\Uninstall.lnk"
     RMDir "$SMPROGRAMS\\Crossfire Server"
