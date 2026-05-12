@@ -91,3 +91,19 @@ If the Start Menu entry is missing after installation:
   created in the current user Start Menu folder as a fallback.
 - Check `%APPDATA%\Microsoft\Windows\Start Menu\Programs\Crossfire Server\`
 - If neither location has shortcuts, rebuild the installer and reinstall.
+
+## Known Issues
+
+### Start Menu Search
+Crossfire Server may not appear in Windows Start Menu search results due to
+a known Windows 10/11 indexing bug affecting some installations. This is not
+an installer defect.
+
+**Workaround:** Access the server via:
+- Start Menu → All Apps → scroll to "C" → Crossfire Server → Start Server
+- Direct shortcut: `C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Crossfire Server\`
+- Desktop shortcut (if created manually)
+- Run directly: `C:\Program Files\Crossfire Server\start-server.bat`
+
+The application IS correctly registered in the Windows registry and
+appears correctly in All Apps and Add/Remove Programs.
