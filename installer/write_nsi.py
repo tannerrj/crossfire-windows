@@ -65,6 +65,33 @@ Section "Crossfire Server" SecMain
     File "${SRCDIR}\\plugins\\cfanim\\cfanim.dll"
     File "${SRCDIR}\\plugins\\cfpython\\cfpython.dll"
 
+    ; Bundled Python standard library
+    SetOutPath "$INSTDIR\\lib\\python3.14"
+    File "${STAGING}\\lib\\python3.14\\*.py"
+    File "${STAGING}\\lib\\python3.14\\datetime.py"
+    File "${STAGING}\\lib\\python3.14\\keyword.py"
+
+    SetOutPath "$INSTDIR\\lib\\python3.14\\encodings"
+    File "${STAGING}\\lib\\python3.14\\encodings\\*"
+
+    SetOutPath "$INSTDIR\\lib\\python3.14\\importlib"
+    File "${STAGING}\\lib\\python3.14\\importlib\\*"
+
+    SetOutPath "$INSTDIR\\lib\\python3.14\\collections"
+    File "${STAGING}\\lib\\python3.14\\collections\\*"
+
+    SetOutPath "$INSTDIR\\lib\\python3.14\\dbm"
+    File "${STAGING}\\lib\\python3.14\\dbm\\*"
+
+    SetOutPath "$INSTDIR\\lib\\python3.14\\dbm"
+    File "${STAGING}\\lib\\python3.14\\dbm\\*"
+
+    SetOutPath "$INSTDIR\\lib\\python3.14\\sqlite3"
+    File "${STAGING}\\lib\\python3.14\\sqlite3\\*"
+
+    SetOutPath "$INSTDIR\\lib\\python3.14\\lib-dynload"
+    File "${STAGING}\\lib\\python3.14\\lib-dynload\\*"
+
     SetOutPath "$INSTDIR\\etc\\crossfire"
     File "${STAGING}\\etc\\crossfire\\ban_file"
     File "${STAGING}\\etc\\crossfire\\dm_file"
@@ -122,9 +149,11 @@ Section "Crossfire Server" SecMain
     FileWrite $0 "$\\r$\\n"
     FileWrite $0 "set LOCALDIR=%ProgramData%\\Crossfire Server$\\r$\\n"
     FileWrite $0 "$\\r$\\n"
-    FileWrite $0 "set PYTHONHOME=C:\\msys64\\ucrt64$\\r$\\n"
-    FileWrite $0 "set PYTHONPATH=C:\\msys64\\ucrt64\\lib\\python3.14;C:\\msys64\\ucrt64\\lib\\python3.14\\lib-dynload$\\r$\\n"
+    FileWrite $0 "set PYTHONHOME=$INSTDIR$\\r$\\n"
+    FileWrite $0 "set PYTHONPATH=$INSTDIR\\lib\\python3.14;$INSTDIR\\lib\\python3.14\\lib-dynload$\\r$\\n"
     FileWrite $0 "$\\r$\\n"
+    FileWrite $0 "if not exist $\\"%LOCALDIR%$\\" mkdir $\\"%LOCALDIR%$\\"$\\r$\\n"
+    FileWrite $0 "icacls $\\"%LOCALDIR%$\\" /grant Everyone:(OI)(CI)F /T >nul 2>&1$\\r$\\n"
     FileWrite $0 "if not exist $\\"%LOCALDIR%\\players$\\" mkdir $\\"%LOCALDIR%\\players$\\"$\\r$\\n"
     FileWrite $0 "if not exist $\\"%LOCALDIR%\\accounts$\\" mkdir $\\"%LOCALDIR%\\accounts$\\"$\\r$\\n"
     FileWrite $0 "if not exist $\\"%LOCALDIR%\\account$\\" mkdir $\\"%LOCALDIR%\\account$\\"$\\r$\\n"
@@ -136,6 +165,8 @@ Section "Crossfire Server" SecMain
     FileWrite $0 "if not exist $\\"%LOCALDIR%\\tmp$\\" mkdir $\\"%LOCALDIR%\\tmp$\\"$\\r$\\n"
     FileWrite $0 "if not exist $\\"%ProgramData%\\Crossfire_Server\\highscores$\\" mkdir $\\"%ProgramData%\\Crossfire_Server\\highscores$\\"$\\r$\\n"
     FileWrite $0 "$\\r$\\n"
+    FileWrite $0 "takeown /f $\\"%LOCALDIR%$\\" /r /d y >nul 2>&1$\\r$\\n"
+    FileWrite $0 "takeown /f $\\"%LOCALDIR%$\\" /r /d y >nul 2>&1$\\r$\\n"
     FileWrite $0 "icacls $\\"%LOCALDIR%$\\" /grant Everyone:(OI)(CI)F /T >nul 2>&1$\\r$\\n"
     FileWrite $0 "$\\r$\\n"
     FileWrite $0 "del /f /q $\\"%LOCALDIR%\\accounts.tmp$\\" 2>nul$\\r$\\n"
@@ -169,6 +200,10 @@ Section "Crossfire Server" SecMain
     WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\CrossfireServer" \\
         "DisplayVersion" "${APP_VERSION}"
     WriteUninstaller "$INSTDIR\\uninstall.exe"
+
+    ; Create ProgramData directory and set permissions at install time
+    ExecWait 'cmd /c mkdir "%ProgramData%\\Crossfire Server" 2>nul'
+    ExecWait 'icacls "%ProgramData%\Crossfire Server" /grant Everyone:(OI)(CI)F /T'
 
     ; Add registry entries for Windows Search indexing
     WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\CrossfireServer" \\
