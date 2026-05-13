@@ -1,0 +1,32 @@
+# Generated NSIS installer script
+*.nsi
+
+# Compiled installer executables
+*.exe
+
+# Build artifacts
+*.dll
+*.a
+*.o
+*.lo
+*.la
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Temporary files
+*.tmp
+*.bak
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
