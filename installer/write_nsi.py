@@ -203,7 +203,7 @@ Section "Crossfire Server" SecMain
 
     ; Create ProgramData directory and set permissions at install time
     ExecWait 'cmd /c mkdir "%ProgramData%\\Crossfire Server" 2>nul'
-    ExecWait 'icacls "%ProgramData%\Crossfire Server" /grant Everyone:(OI)(CI)F /T'
+    ExecWait 'icacls "%ProgramData%\\Crossfire Server" /grant Everyone:(OI)(CI)F /T'
 
     ; Add registry entries for Windows Search indexing
     WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\CrossfireServer" \\
