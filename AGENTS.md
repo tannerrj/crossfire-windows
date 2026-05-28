@@ -94,10 +94,10 @@ installer these would need to be bundled.
 
 Apply patches in this order to avoid conflicts:
 
+1. `output_file.cpp.diff`
+2. `plugins.cpp.diff`
 3. `init.cpp.diff`
 4. `loop.cpp.diff`
-5. `output_file.cpp.diff`
-6. `plugins.cpp.diff`
 
 ## Runtime Dependencies (bundled in installer)
 
