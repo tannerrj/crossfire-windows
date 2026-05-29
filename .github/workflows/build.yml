@@ -69,7 +69,9 @@ jobs:
       - name: Build server
         run: |
           cd crossfire/crossfire-server
-          make -j$(nproc)
+          make -j$(nproc) -C common
+          make -j$(nproc) -C random_maps
+          make -j$(nproc) -C server
           ls -lh server/crossfire-server.exe
 
       - name: Build crossfire.dll
@@ -195,7 +197,9 @@ jobs:
           ./configure --prefix="/usr/local/crossfire" \
             --disable-shared --enable-static \
             CXXFLAGS="-D_GNU_SOURCE" CFLAGS="-D_GNU_SOURCE"
-          make -j$(nproc)
+          make -j$(nproc) -C common
+          make -j$(nproc) -C random_maps
+          make -j$(nproc) -C server
 
       - name: Build crossfire.dll and plugins
         run: |
