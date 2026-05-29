@@ -40,6 +40,7 @@ jobs:
             make
             git
             pkgconf
+            flex
 
       - name: Checkout crossfire-server-mirror
         uses: actions/checkout@v4
@@ -152,6 +153,7 @@ jobs:
             make
             git
             pkgconf
+            flex
 
       - name: Checkout crossfire-server-mirror
         uses: actions/checkout@v4
