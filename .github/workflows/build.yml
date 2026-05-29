@@ -52,7 +52,7 @@ jobs:
 
       - name: Apply Windows patches
         run: |
-          cd crossfire/crossfire-server
+          cd $GITHUB_WORKSPACE/crossfire/crossfire-server
           git apply ../../crossfire-windows/patches/output_file.cpp.diff
           git apply ../../crossfire-windows/patches/plugins.cpp.diff
           git apply ../../crossfire-windows/patches/init.cpp.diff
@@ -60,7 +60,7 @@ jobs:
 
       - name: Configure
         run: |
-          cd crossfire/crossfire-server
+          cd $GITHUB_WORKSPACE/crossfire/crossfire-server
           ./autogen.sh
           ./configure --prefix="/usr/local/crossfire" \
             --disable-shared --enable-static \
@@ -68,7 +68,7 @@ jobs:
 
       - name: Build server
         run: |
-          cd crossfire/crossfire-server
+          cd $GITHUB_WORKSPACE/crossfire/crossfire-server
           make -j$(nproc) -C include
           make -j$(nproc) -C include
           make -j$(nproc) -C common
@@ -78,18 +78,20 @@ jobs:
 
       - name: Build crossfire.dll
         run: |
+          SRCDIR=$GITHUB_WORKSPACE/crossfire/crossfire-server
+          WINDIR=$GITHUB_WORKSPACE/crossfire-windows
           mkdir -p /tmp/server_objs
           cd /tmp/server_objs
-          ar x ~/crossfire/crossfire-server/server/.libs/libserver.a
-          ar x ~/crossfire/crossfire-server/server/.libs/libserver.a libserver_la-server.o
+          ar x $SRCDIR/server/.libs/libserver.a
+          ar x $SRCDIR/server/.libs/libserver.a libserver_la-server.o
           rm -f libserver_la-win32.o
 
           g++ -c -D_GNU_SOURCE \
-            -I~/crossfire/crossfire-server/include \
-            ~/crossfire-windows/installer/win32_stub.cpp \
+            -I$SRCDIR/include \
+            $WINDIR/installer/win32_stub.cpp \
             -o /tmp/win32_stub.o
 
-          cd ~/crossfire/crossfire-server
+          cd $SRCDIR
           g++ -shared -D_GNU_SOURCE \
             -Wl,--whole-archive common/.libs/libcross.a random_maps/.libs/librandom_map.a \
             -Wl,--no-whole-archive /tmp/server_objs/*.o /tmp/win32_stub.o \
@@ -101,25 +103,27 @@ jobs:
 
       - name: Build cfanim.dll
         run: |
-          cd ~/crossfire/crossfire-server/plugins/cfanim
+          SRCDIR=$GITHUB_WORKSPACE/crossfire/crossfire-server
+          cd $SRCDIR/plugins/cfanim
           g++ -shared -D_GNU_SOURCE \
             -I../../include -I./include -I../common/include \
             cfanim.cpp ../common/plugin_common.cpp \
-            ~/crossfire/crossfire-server/crossfire.dll.a \
+            $SRCDIR/crossfire.dll.a \
             -lsqlite3 -lws2_32 -Wl,--enable-auto-image-base \
             -Wl,--out-implib,cfanim.dll.a -o cfanim.dll
           ls -lh cfanim.dll
 
       - name: Build cfpython.dll
         run: |
-          cd ~/crossfire/crossfire-server/plugins/cfpython
+          SRCDIR=$GITHUB_WORKSPACE/crossfire/crossfire-server
+          cd $SRCDIR/plugins/cfpython
           g++ -shared -D_GNU_SOURCE \
             -I../../include -I./include -I../common/include \
-            -IC:/msys64/ucrt64/include/python3.14 \
+            -I/ucrt64/include/python3.14 \
             cfpython.cpp cfpython_archetype.cpp cfpython_map.cpp \
             cfpython_object.cpp cfpython_party.cpp cfpython_region.cpp \
             cjson.cpp ../common/plugin_common.cpp \
-            ~/crossfire/crossfire-server/crossfire.dll.a \
+            $SRCDIR/crossfire.dll.a \
             -lpython3.14 -lsqlite3 -lws2_32 -Wl,--enable-auto-image-base \
             -Wl,--out-implib,cfpython.dll.a -o cfpython.dll
           ls -lh cfpython.dll
@@ -186,7 +190,7 @@ jobs:
 
       - name: Apply Windows patches
         run: |
-          cd crossfire/crossfire-server
+          cd $GITHUB_WORKSPACE/crossfire/crossfire-server
           git apply ../../crossfire-windows/patches/output_file.cpp.diff
           git apply ../../crossfire-windows/patches/plugins.cpp.diff
           git apply ../../crossfire-windows/patches/init.cpp.diff
@@ -194,7 +198,7 @@ jobs:
 
       - name: Configure and build server
         run: |
-          cd crossfire/crossfire-server
+          cd $GITHUB_WORKSPACE/crossfire/crossfire-server
           ./autogen.sh
           ./configure --prefix="/usr/local/crossfire" \
             --disable-shared --enable-static \
