@@ -1,0 +1,289 @@
+name: Build Crossfire Server for Windows
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  compile:
+    name: Compile server and plugins
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout crossfire-windows
+        uses: actions/checkout@v4
+        with:
+          path: crossfire-windows
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-python3
+            mingw-w64-ucrt-x86_64-sqlite3
+            autoconf
+            automake
+            libtool
+            make
+            git
+
+      - name: Checkout crossfire-server-mirror
+        uses: actions/checkout@v4
+        with:
+          repository: tannerrj/crossfire-server-mirror
+          path: crossfire/crossfire-server
+
+      - name: Apply Windows patches
+        run: |
+          cd crossfire/crossfire-server
+          git apply ../../crossfire-windows/patches/output_file.cpp.diff
+          git apply ../../crossfire-windows/patches/plugins.cpp.diff
+          git apply ../../crossfire-windows/patches/init.cpp.diff
+          git apply ../../crossfire-windows/patches/loop.cpp.diff
+
+      - name: Configure
+        run: |
+          cd crossfire/crossfire-server
+          ./autogen.sh
+          ./configure --prefix="/usr/local/crossfire" \
+            CXXFLAGS="-D_GNU_SOURCE" CFLAGS="-D_GNU_SOURCE"
+
+      - name: Build server
+        run: |
+          cd crossfire/crossfire-server
+          make -j$(nproc)
+          ls -lh server/crossfire-server.exe
+
+      - name: Build crossfire.dll
+        run: |
+          mkdir -p /tmp/server_objs
+          cd /tmp/server_objs
+          ar x ~/crossfire/crossfire-server/server/.libs/libserver.a
+          ar x ~/crossfire/crossfire-server/server/.libs/libserver.a libserver_la-server.o
+          rm -f libserver_la-win32.o
+
+          g++ -c -D_GNU_SOURCE \
+            -I~/crossfire/crossfire-server/include \
+            ~/crossfire-windows/installer/win32_stub.cpp \
+            -o /tmp/win32_stub.o
+
+          cd ~/crossfire/crossfire-server
+          g++ -shared -D_GNU_SOURCE \
+            -Wl,--whole-archive common/.libs/libcross.a random_maps/.libs/librandom_map.a \
+            -Wl,--no-whole-archive /tmp/server_objs/*.o /tmp/win32_stub.o \
+            -lsqlite3 -lws2_32 -lpython3.14 \
+            -Wl,--enable-auto-image-base \
+            -Wl,--allow-shlib-undefined \
+            -Wl,--out-implib,crossfire.dll.a -o crossfire.dll
+          ls -lh crossfire.dll
+
+      - name: Build cfanim.dll
+        run: |
+          cd ~/crossfire/crossfire-server/plugins/cfanim
+          g++ -shared -D_GNU_SOURCE \
+            -I../../include -I./include -I../common/include \
+            cfanim.cpp ../common/plugin_common.cpp \
+            ~/crossfire/crossfire-server/crossfire.dll.a \
+            -lsqlite3 -lws2_32 -Wl,--enable-auto-image-base \
+            -Wl,--out-implib,cfanim.dll.a -o cfanim.dll
+          ls -lh cfanim.dll
+
+      - name: Build cfpython.dll
+        run: |
+          cd ~/crossfire/crossfire-server/plugins/cfpython
+          g++ -shared -D_GNU_SOURCE \
+            -I../../include -I./include -I../common/include \
+            -IC:/msys64/ucrt64/include/python3.14 \
+            cfpython.cpp cfpython_archetype.cpp cfpython_map.cpp \
+            cfpython_object.cpp cfpython_party.cpp cfpython_region.cpp \
+            cjson.cpp ../common/plugin_common.cpp \
+            ~/crossfire/crossfire-server/crossfire.dll.a \
+            -lpython3.14 -lsqlite3 -lws2_32 -Wl,--enable-auto-image-base \
+            -Wl,--out-implib,cfpython.dll.a -o cfpython.dll
+          ls -lh cfpython.dll
+
+  installer:
+    name: Build installer
+    runs-on: windows-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: compile
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout crossfire-windows
+        uses: actions/checkout@v4
+        with:
+          path: crossfire-windows
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-python3
+            mingw-w64-ucrt-x86_64-sqlite3
+            mingw-w64-ucrt-x86_64-nsis
+            autoconf
+            automake
+            libtool
+            make
+            git
+
+      - name: Checkout crossfire-server-mirror
+        uses: actions/checkout@v4
+        with:
+          repository: tannerrj/crossfire-server-mirror
+          path: crossfire/crossfire-server
+
+      - name: Checkout crossfire-arch-mirror
+        uses: actions/checkout@v4
+        with:
+          repository: tannerrj/crossfire-arch-mirror
+          path: crossfire/crossfire-arch
+
+      - name: Checkout crossfire-maps-mirror
+        uses: actions/checkout@v4
+        with:
+          repository: tannerrj/crossfire-maps-mirror
+          path: crossfire/crossfire-maps
+
+      - name: Apply Windows patches
+        run: |
+          cd crossfire/crossfire-server
+          git apply ../../crossfire-windows/patches/output_file.cpp.diff
+          git apply ../../crossfire-windows/patches/plugins.cpp.diff
+          git apply ../../crossfire-windows/patches/init.cpp.diff
+          git apply ../../crossfire-windows/patches/loop.cpp.diff
+
+      - name: Configure and build server
+        run: |
+          cd crossfire/crossfire-server
+          ./autogen.sh
+          ./configure --prefix="/usr/local/crossfire" \
+            CXXFLAGS="-D_GNU_SOURCE" CFLAGS="-D_GNU_SOURCE"
+          make -j$(nproc)
+
+      - name: Build crossfire.dll and plugins
+        run: |
+          mkdir -p /tmp/server_objs
+          cd /tmp/server_objs
+          ar x ~/crossfire/crossfire-server/server/.libs/libserver.a
+          ar x ~/crossfire/crossfire-server/server/.libs/libserver.a libserver_la-server.o
+          rm -f libserver_la-win32.o
+
+          g++ -c -D_GNU_SOURCE \
+            -I~/crossfire/crossfire-server/include \
+            ~/crossfire-windows/installer/win32_stub.cpp \
+            -o /tmp/win32_stub.o
+
+          cd ~/crossfire/crossfire-server
+          g++ -shared -D_GNU_SOURCE \
+            -Wl,--whole-archive common/.libs/libcross.a random_maps/.libs/librandom_map.a \
+            -Wl,--no-whole-archive /tmp/server_objs/*.o /tmp/win32_stub.o \
+            -lsqlite3 -lws2_32 -lpython3.14 \
+            -Wl,--enable-auto-image-base \
+            -Wl,--allow-shlib-undefined \
+            -Wl,--out-implib,crossfire.dll.a -o crossfire.dll
+
+          cd ~/crossfire/crossfire-server/plugins/cfanim
+          g++ -shared -D_GNU_SOURCE \
+            -I../../include -I./include -I../common/include \
+            cfanim.cpp ../common/plugin_common.cpp \
+            ~/crossfire/crossfire-server/crossfire.dll.a \
+            -lsqlite3 -lws2_32 -Wl,--enable-auto-image-base \
+            -Wl,--out-implib,cfanim.dll.a -o cfanim.dll
+
+          cd ~/crossfire/crossfire-server/plugins/cfpython
+          g++ -shared -D_GNU_SOURCE \
+            -I../../include -I./include -I../common/include \
+            -IC:/msys64/ucrt64/include/python3.14 \
+            cfpython.cpp cfpython_archetype.cpp cfpython_map.cpp \
+            cfpython_object.cpp cfpython_party.cpp cfpython_region.cpp \
+            cjson.cpp ../common/plugin_common.cpp \
+            ~/crossfire/crossfire-server/crossfire.dll.a \
+            -lpython3.14 -lsqlite3 -lws2_32 -Wl,--enable-auto-image-base \
+            -Wl,--out-implib,cfpython.dll.a -o cfpython.dll
+
+      - name: Install server
+        run: |
+          cd ~/crossfire/crossfire-server
+          make install DESTDIR=$HOME/crossfire-staging
+
+      - name: Copy maps and arch to staging
+        run: |
+          mkdir -p ~/crossfire-staging/usr/local/crossfire/share/crossfire/maps
+          cp -r ~/crossfire/crossfire-maps/. \
+            ~/crossfire-staging/usr/local/crossfire/share/crossfire/maps/
+          cp -r ~/crossfire/crossfire-arch/. \
+            ~/crossfire-staging/usr/local/crossfire/share/crossfire/
+
+      - name: Copy built DLLs to staging
+        run: |
+          cp ~/crossfire/crossfire-server/crossfire.dll \
+            ~/crossfire-staging/usr/local/crossfire/bin/crossfire.dll
+          cp ~/crossfire/crossfire-server/plugins/cfanim/cfanim.dll \
+            ~/crossfire-staging/usr/local/crossfire/lib/crossfire/plugins/cfanim.dll
+          cp ~/crossfire/crossfire-server/plugins/cfpython/cfpython.dll \
+            ~/crossfire-staging/usr/local/crossfire/lib/crossfire/plugins/cfpython.dll
+
+      - name: Bundle Python stdlib
+        run: |
+          PYLIB=/c/msys64/ucrt64/lib/python3.14
+          STAGING=~/crossfire-staging/usr/local/crossfire/lib/python3.14
+          mkdir -p $STAGING/encodings $STAGING/importlib \
+            $STAGING/collections $STAGING/sqlite3 \
+            $STAGING/dbm $STAGING/lib-dynload
+          cp $PYLIB/*.py $STAGING/
+          cp -r $PYLIB/encodings/. $STAGING/encodings/
+          cp -r $PYLIB/importlib/. $STAGING/importlib/
+          cp -r $PYLIB/collections/. $STAGING/collections/
+          cp -r $PYLIB/sqlite3/. $STAGING/sqlite3/
+          cp -r $PYLIB/dbm/. $STAGING/dbm/
+          cp $PYLIB/lib-dynload/*.pyd $STAGING/lib-dynload/
+
+      - name: Get version
+        id: version
+        run: |
+          GITVER="git-$(git -C ~/crossfire/crossfire-server log --format='%h' -1 | cut -c1-7)"
+          echo "GITVER=$GITVER" >> $GITHUB_OUTPUT
+          echo "Version: $GITVER"
+
+      - name: Generate NSIS script
+        run: |
+          python3 ~/crossfire-windows/installer/write_nsi.py \
+            "${{ steps.version.outputs.GITVER }}" \
+            "$(cygpath -m ~/crossfire-installer.nsi)"
+
+      - name: Build installer
+        run: |
+          cd ~
+          makensis crossfire-installer.nsi
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CrossfireServer-${{ steps.version.outputs.GITVER }}-Setup
+          path: ~/CrossfireServer-${{ steps.version.outputs.GITVER }}-Setup.exe
+          retention-days: 30
+
+      - name: Attach to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: ~/CrossfireServer-${{ steps.version.outputs.GITVER }}-Setup.exe
