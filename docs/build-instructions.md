@@ -168,11 +168,6 @@ After every installer rebuild and fresh installation, always verify:
 
 ## Known Issues
 
-### accounts.tmp Access Denied
-On first client connect, the server logs an "Access is denied" error when
-renaming accounts.tmp. This is cosmetic — accounts save and load correctly.
-Players can create characters, log out, and log back in without issue.
-
 ### Start Menu Search
 Crossfire Server may not appear in Windows Start Menu search results due to
 a known Windows 10/11 indexing bug. This is not an installer defect.

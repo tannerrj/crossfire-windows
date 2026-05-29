@@ -124,3 +124,44 @@ The following patches from this project were accepted upstream:
 | `plugins.cpp.diff` | Win32 directory scan + absolute plugin paths |
 | `init.cpp.diff` | WSAStartup error checking + WSAGetLastError |
 | `loop.cpp.diff` | Enhanced Winsock `select()` error handling |
+
+---
+
+## [v1.75.0-git-2f3c503-win2] - 2026-05-29
+
+### Fixed
+- **accounts.tmp Access Denied permanently fixed** — root cause was
+  `start-server.bat` creating an `accounts` directory via `mkdir`, but
+  the server expects `accounts` to be a plain file. `MoveFileExA` cannot
+  replace a directory with a file, causing "Access is denied" on every
+  first connect on a clean install.
+  - Fix 1: Removed `mkdir accounts` from `start-server.bat`
+  - Fix 2: Replaced `MoveFileExA` with `CopyFileA + DeleteFileA` in
+    `output_file.cpp` to avoid inherited ACL issues in ProgramData
+
+### Added
+- **GitHub Actions CI** — automated build on every push to `main`
+  - `compile` job: builds server + all DLLs using GitHub mirrors (~7 min)
+  - `installer` job: full build with maps/arch, produces `.exe` installer,
+    attaches to GitHub Release automatically on version tags
+  - Uses `windows-2025` runner, Node.js 24
+  - Sources: `crossfire-server-mirror`, `crossfire-arch-mirror`,
+    `crossfire-maps-mirror`
+- CI build status badge added to README
+
+### Changed
+- `output_file.cpp.diff`: replaced `MoveFileExA` retry loop with
+  `CopyFileA + DeleteFileA` for more reliable file writes on Windows
+- `write_nsi.py`: removed erroneous `mkdir accounts` from `start-server.bat`
+- `write_nsi.py`: fixed duplicate `takeown` call
+- `write_nsi.py`: moved `icacls` to run after all directories are created
+- README, build-instructions.md, AGENTS.md updated for upstream base
+  `2f3c503af`
+
+### Patches Applied
+| Patch | Description |
+|---|---|
+| `output_file.cpp.diff` | Atomic write via `CopyFileA + DeleteFileA` |
+| `plugins.cpp.diff` | Win32 directory scan + absolute plugin paths |
+| `init.cpp.diff` | WSAStartup error checking + WSAGetLastError |
+| `loop.cpp.diff` | Enhanced Winsock `select()` error handling |

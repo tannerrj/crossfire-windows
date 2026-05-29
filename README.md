@@ -86,9 +86,6 @@ The recommended client is the [GTK client](https://crossfire.real-time.com/clien
 
 ## Known Issues
 
-- **accounts.tmp rename error** — "Access is denied" appears once on first
-  client connect. This is cosmetic and does not affect gameplay or account
-  persistence.
 - **Start Menu search** — The server may not appear in Start Menu search on
   some Windows 11 installs. Use All Apps → C → Crossfire Server instead.
 - **Unsigned installer** — SmartScreen will warn about the unsigned installer.
