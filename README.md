@@ -1,3 +1,5 @@
+[![Build](https://github.com/tannerrj/crossfire-windows/actions/workflows/build.yml/badge.svg)](https://github.com/tannerrj/crossfire-windows/actions/workflows/build.yml)
+
 # Crossfire Server — Windows Build
 
 This repository contains the patches, installer script, and build tooling
