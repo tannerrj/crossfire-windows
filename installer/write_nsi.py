@@ -153,9 +153,7 @@ Section "Crossfire Server" SecMain
     FileWrite $0 "set PYTHONPATH=$INSTDIR\\lib\\python3.14;$INSTDIR\\lib\\python3.14\\lib-dynload$\\r$\\n"
     FileWrite $0 "$\\r$\\n"
     FileWrite $0 "if not exist $\\"%LOCALDIR%$\\" mkdir $\\"%LOCALDIR%$\\"$\\r$\\n"
-    FileWrite $0 "icacls $\\"%LOCALDIR%$\\" /grant Everyone:(OI)(CI)F /T >nul 2>&1$\\r$\\n"
     FileWrite $0 "if not exist $\\"%LOCALDIR%\\players$\\" mkdir $\\"%LOCALDIR%\\players$\\"$\\r$\\n"
-    FileWrite $0 "if not exist $\\"%LOCALDIR%\\accounts$\\" mkdir $\\"%LOCALDIR%\\accounts$\\"$\\r$\\n"
     FileWrite $0 "if not exist $\\"%LOCALDIR%\\account$\\" mkdir $\\"%LOCALDIR%\\account$\\"$\\r$\\n"
     FileWrite $0 "if not exist $\\"%LOCALDIR%\\unique-items$\\" mkdir $\\"%LOCALDIR%\\unique-items$\\"$\\r$\\n"
     FileWrite $0 "if not exist $\\"%LOCALDIR%\\template-maps$\\" mkdir $\\"%LOCALDIR%\\template-maps$\\"$\\r$\\n"
@@ -166,8 +164,7 @@ Section "Crossfire Server" SecMain
     FileWrite $0 "if not exist $\\"%ProgramData%\\Crossfire_Server\\highscores$\\" mkdir $\\"%ProgramData%\\Crossfire_Server\\highscores$\\"$\\r$\\n"
     FileWrite $0 "$\\r$\\n"
     FileWrite $0 "takeown /f $\\"%LOCALDIR%$\\" /r /d y >nul 2>&1$\\r$\\n"
-    FileWrite $0 "takeown /f $\\"%LOCALDIR%$\\" /r /d y >nul 2>&1$\\r$\\n"
-    FileWrite $0 "icacls $\\"%LOCALDIR%$\\" /grant Everyone:(OI)(CI)F /T >nul 2>&1$\\r$\\n"
+    FileWrite $0 "icacls $\\"%LOCALDIR%$\\" /grant:r Everyone:(OI)(CI)(F) /T >nul 2>&1$\\r$\\n"
     FileWrite $0 "$\\r$\\n"
     FileWrite $0 "del /f /q $\\"%LOCALDIR%\\accounts.tmp$\\" 2>nul$\\r$\\n"
     FileWrite $0 "del /q $\\"%LOCALDIR%\\account\\*.tmp$\\" 2>nul$\\r$\\n"
@@ -203,7 +200,7 @@ Section "Crossfire Server" SecMain
 
     ; Create ProgramData directory and set permissions at install time
     ExecWait 'cmd /c mkdir "%ProgramData%\\Crossfire Server" 2>nul'
-    ExecWait 'icacls "%ProgramData%\\Crossfire Server" /grant Everyone:(OI)(CI)F /T'
+    ExecWait 'icacls "%ProgramData%\\Crossfire Server" /grant:r Everyone:(OI)(CI)(F) /T'
 
     ; Add registry entries for Windows Search indexing
     WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\CrossfireServer" \\

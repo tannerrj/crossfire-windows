@@ -1,5 +1,5 @@
 diff --git a/common/output_file.cpp b/common/output_file.cpp
-index 62f8c8f26..83bca81d5 100644
+index 62f8c8f26..4e32ae312 100644
 --- a/common/output_file.cpp
 +++ b/common/output_file.cpp
 @@ -16,6 +16,9 @@
@@ -12,29 +12,33 @@ index 62f8c8f26..83bca81d5 100644
  #include "logger.h"
  #include "output_file.h"
  
-@@ -74,6 +77,21 @@ int of_close(OutputFile *of) {
+@@ -74,6 +77,25 @@ int of_close(OutputFile *of) {
          free(of->fname);
          return 0;
      }
 +#ifdef WIN32
-+    /* Windows: explicitly delete destination before rename to avoid Access Denied */
-+    DeleteFileA(of->fname);
-+    /* Windows: use MoveFileExA with replace flag to handle locked files */
-+    if (!MoveFileExA(of->fname_tmp, of->fname, MOVEFILE_REPLACE_EXISTING)) {
-+        DWORD err = GetLastError();
-+        char errbuf[256];
-+        FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, 0, errbuf, sizeof(errbuf), NULL);
-+        LOG(llevError, "%s: cannot rename from %s: %s\n", of->fname, of->fname_tmp, errbuf);
-+        remove(of->fname_tmp);
-+        free(of->fname_tmp);
-+        free(of->fname);
-+        return 0;
++    /* Windows: use CopyFile+Delete instead of MoveFileExA to avoid
++     * Access Denied on first write in ProgramData directories where
++     * inherited ACLs block rename operations for non-admin users */
++    {
++        BOOL ok = CopyFileA(of->fname_tmp, of->fname, FALSE);
++        if (!ok) {
++            DWORD err = GetLastError();
++            char errbuf[256];
++            FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err, 0, errbuf, sizeof(errbuf), NULL);
++            LOG(llevError, "%s: cannot copy from %s: %s\n", of->fname, of->fname_tmp, errbuf);
++            remove(of->fname_tmp);
++            free(of->fname_tmp);
++            free(of->fname);
++            return 0;
++        }
++        DeleteFileA(of->fname_tmp);
 +    }
 +#else
      if (rename(of->fname_tmp, of->fname) != 0) {
          LOG(llevError, "%s: cannot rename from %s: %s\n", of->fname, of->fname_tmp, strerror(errno));
          remove(of->fname_tmp);
-@@ -81,6 +99,7 @@ int of_close(OutputFile *of) {
+@@ -81,6 +103,7 @@ int of_close(OutputFile *of) {
          free(of->fname);
          return 0;
      }
