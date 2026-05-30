@@ -17,7 +17,6 @@ echo ""
 # Step 1: Clone source if not present or empty
 if [ ! -f "$SRCDIR/configure.ac" ]; then
     echo "[1/9] Cloning Crossfire server source..."
-    rm -rf "$SRCDIR"
     mkdir -p "$HOME/crossfire"
     git clone https://git.code.sf.net/p/crossfire/crossfire-server \
         "$SRCDIR"
