@@ -1,20 +1,27 @@
-# Generated NSIS installer script
-*.nsi
+# Generated NSIS installer script (written to $HOME by build.sh)
+crossfire-installer.nsi
 
-# Compiled installer executables
-*.exe
+# Built installers
+CrossfireServer-*-Setup.exe
 
-# Build artifacts
+# Compiled build artifacts (produced in $SRCDIR and /tmp, not in this repo,
+# but ignored here as a safety net if build.sh is run from within the repo)
 *.dll
-*.a
+*.dll.a
+*.exe
 *.o
 *.lo
 *.la
+*.a
 
-# Python cache
+# Python byte-compiled files
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
+
+# Staging directory (if accidentally created inside the repo)
+crossfire-staging/
 
 # Temporary files
 *.tmp
