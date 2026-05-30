@@ -189,7 +189,8 @@ python3 "$INSTALLERDIR/write_nsi.py" "$GITVER" \
 # Step 9: Build installer
 echo "[9/9] Building installer..."
 makensis crossfire-installer.nsi
-cp "CrossfireServer-${GITVER}-Setup.exe" /c/Users/leaf/Desktop/
+DESKTOP="$(cygpath "$USERPROFILE")/Desktop"
+cp "CrossfireServer-${GITVER}-Setup.exe" "$DESKTOP/"
 echo ""
 echo "=== Build complete ==="
 echo "Installer: CrossfireServer-${GITVER}-Setup.exe"
