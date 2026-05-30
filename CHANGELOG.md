@@ -5,6 +5,54 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Windows Service support** — optional NSIS component installs and starts
+  the server as a Windows service (`CrossfireServer`)
+  - Service auto-starts at boot; survives user logout
+  - Install path read from `HKLM\Software\Crossfire Server\InstallDir`
+    (written by NSIS at install time); falls back to exe location
+  - `PYTHONHOME`, `PYTHONPATH`, and `SetDllDirectoryA` configured from
+    install path so cfpython.dll finds the bundled stdlib without MSYS2
+  - `-regsrv` / `-unregsrv` / `-srv` flags added to `crossfire-server.exe`
+    via `win32_stub.cpp`; installer registers/unregisters service automatically
+
+### Changed
+- **Installer version now derived from this repo** — `GITVER` is taken from
+  the `crossfire-windows` git commit hash instead of the upstream server
+  source. Installer filenames now track packaging changes (e.g.
+  `CrossfireServer-git-4765bbb-Setup.exe`).
+- `build.sh` rewritten end-to-end with full automation:
+  - Step 0 `pacman -S --needed` ensures all build deps including `pkgconf`
+    and `flex` are present
+  - Clone steps for `crossfire-arch` and `crossfire-maps` with stale-dir
+    detection; symlinks into source tree for `make install`
+  - `autoreconf -i` replaces `./autogen.sh`
+  - `--without-gd --disable-shared --enable-static` passed to `./configure`
+  - Targeted `make -C include/common/random_maps/server` instead of full
+    `make` to avoid failing in `lib/` before arch/maps are present
+  - `server/main.o` explicitly linked into `crossfire.dll` (not in
+    `libserver.a`) to resolve `main()` for `ServiceMain`
+  - Python stdlib bundled from `/c/msys64/ucrt64/lib/python3.14`
+- CI/CD updated to Node.js 24 native actions:
+  - `actions/checkout@v4` → `@v5`
+  - `actions/upload-artifact@v4` → `@v7`
+  - Removed `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` workarounds
+- CI installer job: all staging paths use `$GITHUB_WORKSPACE` (not `~`)
+- CI Python lib path: `/ucrt64/lib/python3.14` (not `/c/msys64/ucrt64/...`)
+
+### Fixed
+- `libserver_la-win32.o` correctly excluded from `crossfire.dll` (contained
+  the old empty stubs that conflicted with the full service implementation)
+- `ServiceMain` signature corrected to `LPWSTR *argv` to match
+  `SERVICE_TABLE_ENTRYW`
+- NSIS `SectionDescription` removed from inside section bodies (invalid NSIS)
+- `ln -s lib/arch lib/maps` now preceded by `rm -rf` to avoid
+  "cannot overwrite non-directory" error on rebuild
+
+---
+
 ## [v1.75.0-git-2f3c503-win2] - 2026-05-29
 
 ### Fixed
@@ -164,6 +212,8 @@ The following patches from this project were accepted upstream:
 
 ---
 
-[v1.75.0-git-a28489b]: https://github.com/tannerrj/crossfire-windows/releases/tag/v1.75.0-git-a28489b
-[v1.75.0-git-2f3c503]: https://github.com/tannerrj/crossfire-windows/releases/tag/v1.75.0-git-2f3c503
+[Unreleased]: https://github.com/tannerrj/crossfire-windows/compare/v1.75.0-git-2f3c503-win2...HEAD
 [v1.75.0-git-2f3c503-win2]: https://github.com/tannerrj/crossfire-windows/releases/tag/v1.75.0-git-2f3c503-win2
+[v1.75.0-git-2f3c503]: https://github.com/tannerrj/crossfire-windows/releases/tag/v1.75.0-git-2f3c503
+[v1.75.0-git-a28489b]: https://github.com/tannerrj/crossfire-windows/releases/tag/v1.75.0-git-a28489b
+[v1.75.0-git-fe1fdb5]: https://github.com/tannerrj/crossfire-windows/releases/tag/v1.75.0-git-fe1fdb5

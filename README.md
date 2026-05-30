@@ -11,9 +11,11 @@ for Windows 10/11 (64-bit) using MSYS2 UCRT64.
 | Item | Value |
 |---|---|
 | Upstream base | `2f3c503af` (v1.75.0-1756) |
-| Installer | `CrossfireServer-git-2f3c503-Setup.exe` |
+| Installer | `CrossfireServer-git-4765bbb-Setup.exe` |
+| Version source | This repo's git commit hash |
 | Tested on | Windows 10, Windows 11 (clean install, no MSYS2) |
 | Python stdlib | Bundled (no MSYS2 required on target machine) |
+| Windows Service | Optional — install via Components page in installer |
 
 ## What This Repo Contains
 
@@ -49,7 +51,7 @@ for Windows 10/11 (64-bit) using MSYS2 UCRT64.
 | `loop.cpp.diff` | Enhanced Winsock `select()` error handling with specific error codes |
 
 These patches are maintained in this repository as the upstream Crossfire
-project does not currently accept Windows-specific patches.
+project does not currently accept patches from this project.
 
 ## Game Data
 
@@ -60,6 +62,24 @@ The installer bundles the complete Crossfire game data set:
 - All help files, i18n data, and configuration
 
 Map content is updated to match upstream `2f3c503af`.
+
+## Windows Service
+
+The installer includes an optional **Windows Service** component (selected on
+the Components page). When installed:
+
+- The server registers as `CrossfireServer` in the Windows Service Control Manager
+- Starts automatically at boot; runs in the background without a logged-in user
+- Managed via `services.msc` or `sc start/stop CrossfireServer`
+- Install path is read from the registry so the service works after moving the
+  install directory
+
+To install/uninstall the service manually:
+
+```bat
+crossfire-server.exe -regsrv
+crossfire-server.exe -unregsrv
+```
 
 ## Python Standard Library
 

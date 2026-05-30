@@ -54,10 +54,14 @@ git apply ~/crossfire-windows/patches/loop.cpp.diff
 ### Step 2 - Configure and compile
 ```bash
 cd ~/crossfire/crossfire-server
-./autogen.sh
+autoreconf -i
 ./configure --prefix="/usr/local/crossfire" \
+    --disable-shared --enable-static --without-gd \
     CXXFLAGS="-D_GNU_SOURCE" CFLAGS="-D_GNU_SOURCE"
-make -j$(nproc)
+make -j$(nproc) -C include
+make -j$(nproc) -C common
+make -j$(nproc) -C random_maps
+make -j$(nproc) -C server
 ```
 
 ### Step 3 - Build crossfire.dll
@@ -73,12 +77,15 @@ g++ -c -D_GNU_SOURCE -I~/crossfire/crossfire-server/include \
 cd ~/crossfire/crossfire-server
 g++ -shared -D_GNU_SOURCE \
     -Wl,--whole-archive common/.libs/libcross.a random_maps/.libs/librandom_map.a \
-    -Wl,--no-whole-archive /tmp/server_objs/*.o /tmp/win32_stub.o \
+    -Wl,--no-whole-archive /tmp/server_objs/*.o server/main.o /tmp/win32_stub.o \
     -lsqlite3 -lws2_32 -lpython3.14 \
     -Wl,--enable-auto-image-base \
     -Wl,--allow-shlib-undefined \
     -Wl,--out-implib,crossfire.dll.a -o crossfire.dll
 ```
+
+> **Note:** `server/main.o` must be linked explicitly — it is not included in
+> `libserver.a` and is required so `ServiceMain` can call `main()` at runtime.
 
 ### Step 4 - Build plugin DLLs
 ```bash
@@ -115,13 +122,44 @@ cp plugins/cfpython/cfpython.dll \
 
 ### Step 6 - Build installer
 ```bash
-cd /home/leaf
-GITVER="git-$(git -C ~/crossfire/crossfire-server log --format='%h' -1 | cut -c1-7)"
+cd ~
+GITVER="git-$(git -C ~/crossfire-windows log --format='%h' -1 | cut -c1-7)"
 python3 ~/crossfire-windows/installer/write_nsi.py "$GITVER" \
     "$(cygpath -m ~/crossfire-installer.nsi)"
 makensis crossfire-installer.nsi
-cp ~/CrossfireServer-${GITVER}-Setup.exe /c/Users/leaf/Desktop/
+cp ~/CrossfireServer-${GITVER}-Setup.exe /c/Users/$USERNAME/Desktop/
 ```
+
+> **Note:** The version string is derived from the `crossfire-windows` repo
+> commit hash (not the upstream server), so it reflects packaging changes.
+
+## Windows Service
+
+The installer offers an optional **Windows Service** component on the
+Components page. When selected, the installer registers `CrossfireServer`
+with the Windows Service Control Manager so the server starts at boot and
+runs in the background without a logged-in user.
+
+### Manual service management
+```bat
+REM Register the service (run as Administrator)
+crossfire-server.exe -regsrv
+
+REM Unregister the service
+crossfire-server.exe -unregsrv
+
+REM Start / stop via sc
+sc start CrossfireServer
+sc stop CrossfireServer
+```
+
+Or use `services.msc` to manage the service interactively.
+
+### How it works
+`ServiceMain` in `installer/win32_stub.cpp` reads the install path from
+`HKLM\Software\Crossfire Server\InstallDir` (written by NSIS at install
+time), sets `PYTHONHOME`, `PYTHONPATH`, and `SetDllDirectoryA`, then calls
+`main()` with `-data`, `-conf`, `-local`, and `-p 13327`.
 
 ## Installed Files
 

@@ -21,7 +21,7 @@ crossfire-windows/
 │   └── loop.cpp.diff           ← Fixes select() error handling for Winsock
 ├── installer/
 │   ├── write_nsi.py            ← Generates crossfire-installer.nsi
-│   └── win32_stub.cpp          ← Stub for bRunning, service_register/unregister/handle
+│   └── win32_stub.cpp          ← Full Windows SCM service (ServiceMain, service_register/unregister/handle, bRunning)
 └── docs/
     ├── build-instructions.md   ← Step-by-step build guide
     └── gpl-compatibility.md    ← GPLv2 license compatibility analysis
@@ -68,13 +68,26 @@ monolithic `crossfire.dll` that both `crossfire-server.exe` and the
 plugin DLLs link against.
 
 ### crossfire.dll build process
-1. Extract all objects from `server/.libs/libserver.a` excluding
-   `libserver_la-win32.o` and `libserver_la-server.o`
-2. Compile `installer/win32_stub.cpp` to provide `bRunning`,
-   `service_register()`, `service_unregister()`, `service_handle()`
+1. Extract all objects from `server/.libs/libserver.a` excluding only
+   `libserver_la-win32.o` (the old empty stub — replaced by `win32_stub.cpp`)
+2. Compile `installer/win32_stub.cpp` to provide the full Windows SCM
+   service implementation: `bRunning`, `ServiceMain`, `service_register()`,
+   `service_unregister()`, `service_handle()`
 3. Link with `--whole-archive` against `libcross.a` and `librandom_map.a`
-4. Link remaining server objects and the stub
+4. Link extracted server objects + `server/main.o` (not in `libserver.a`) +
+   the stub
 5. Output: `crossfire.dll` + `crossfire.dll.a` (import library)
+
+### Windows Service
+`crossfire-server.exe` accepts three service flags handled in `win32_stub.cpp`:
+- `-regsrv` — registers `CrossfireServer` as an `AUTO_START` SCM service
+- `-unregsrv` — stops and deletes the service
+- `-srv` — enters the service dispatcher (called by SCM at startup)
+
+`ServiceMain` reads the install path from
+`HKLM\Software\Crossfire Server\InstallDir`, sets `PYTHONHOME`/`PYTHONPATH`
+and `SetDllDirectoryA`, then calls `main()` with `-data`, `-conf`, `-local`,
+`-p 13327`.
 
 ### Plugin loading
 Plugins are loaded from an absolute path derived from
@@ -83,9 +96,10 @@ to get the install root, then appending `\lib\crossfire\plugins\*.dll`.
 `SetDllDirectoryA()` points to `bin` so runtime DLLs are found.
 
 ### Python stdlib
-`PYTHONHOME` and `PYTHONPATH` must point to the MSYS2 Python installation.
-Currently set in `start-server.bat` at runtime. For a fully portable
-installer these would need to be bundled.
+The installer bundles the Python 3.14 stdlib from `/ucrt64/lib/python3.14`
+into `INSTDIR\lib\python3.14`. Both `start-server.bat` and `ServiceMain`
+set `PYTHONHOME` and `PYTHONPATH` to the bundled location so `cfpython.dll`
+works on machines without MSYS2 installed.
 
 ## Patch Application Order
 
