@@ -63,7 +63,7 @@ echo "[5/9] Building crossfire.dll..."
 mkdir -p /tmp/server_objs
 cd /tmp/server_objs
 ar x "$SRCDIR/server/.libs/libserver.a"
-rm -f libserver_la-win32.o libserver_la-server.o
+rm -f libserver_la-win32.o
 cd "$SRCDIR"
 
 g++ -c -D_GNU_SOURCE -I./include \
@@ -76,7 +76,6 @@ g++ -shared \
     random_maps/.libs/librandom_map.a \
     -Wl,--no-whole-archive \
     /tmp/server_objs/*.o \
-    server/.libs/libserver_la-server.o \
     /tmp/win32_stub.o \
     -lsqlite3 -lws2_32 -lpython3.14 \
     -Wl,--enable-auto-image-base \
