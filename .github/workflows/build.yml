@@ -57,7 +57,7 @@ jobs:
       - name: Configure
         run: |
           cd $GITHUB_WORKSPACE/crossfire/crossfire-server
-          ./autogen.sh
+          autoreconf -i
           ./configure --prefix="/usr/local/crossfire" \
             --disable-shared --enable-static \
             --without-gd \
@@ -188,7 +188,7 @@ jobs:
       - name: Configure and build server
         run: |
           cd $GITHUB_WORKSPACE/crossfire/crossfire-server
-          ./autogen.sh
+          autoreconf -i
           ./configure --prefix="/usr/local/crossfire" \
             --disable-shared --enable-static \
             --without-gd \

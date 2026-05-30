@@ -14,9 +14,10 @@ BUILDDIR="$HOME"
 echo "=== Crossfire Windows Build Script ==="
 echo ""
 
-# Step 1: Clone source if not present
-if [ ! -d "$SRCDIR" ]; then
+# Step 1: Clone source if not present or empty
+if [ ! -f "$SRCDIR/configure.ac" ]; then
     echo "[1/9] Cloning Crossfire server source..."
+    rm -rf "$SRCDIR"
     mkdir -p "$HOME/crossfire"
     git clone https://git.code.sf.net/p/crossfire/crossfire-server \
         "$SRCDIR"
@@ -36,7 +37,7 @@ done
 
 # Step 3: Configure
 echo "[3/9] Running configure..."
-./autogen.sh
+autoreconf -i
 ./configure --prefix="/usr/local/crossfire" \
     --disable-shared --enable-static \
     --without-gd \
