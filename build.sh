@@ -115,8 +115,10 @@ g++ -shared \
     -o cfpython.dll
 echo "  cfpython.dll built."
 
-# Step 7: Sync staging directory with freshly built binaries
+# Step 7: Install server to staging directory, then sync freshly built binaries
 echo "[7/9] Syncing staging directory..."
+cd "$SRCDIR"
+make install DESTDIR="$HOME/crossfire-staging"
 cp -v "$SRCDIR/server/crossfire-server.exe" \
     "$STAGINGDIR/bin/crossfire-server.exe"
 cp -v "$SRCDIR/crossfire.dll" \
