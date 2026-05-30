@@ -155,11 +155,13 @@ cp -v "$SRCDIR/plugins/cfpython/cfpython.dll" \
     "$STAGINGDIR/lib/crossfire/plugins/cfpython.dll" 2>/dev/null || true
 echo "  Staging directory synced."
 
-# Step 7b: Copy maps and arch into staging
+# Step 7b: Copy maps and arch into staging (exclude .git — pack files are read-only)
 echo "[7b/9] Copying maps and arch to staging..."
 mkdir -p "$STAGINGDIR/share/crossfire/maps"
-cp -r "$MAPSDIR/." "$STAGINGDIR/share/crossfire/maps/"
-cp -r "$ARCHDIR/." "$STAGINGDIR/share/crossfire/"
+find "$MAPSDIR" -mindepth 1 -maxdepth 1 ! -name '.git' \
+    -exec cp -r {} "$STAGINGDIR/share/crossfire/maps/" \;
+find "$ARCHDIR" -mindepth 1 -maxdepth 1 ! -name '.git' \
+    -exec cp -r {} "$STAGINGDIR/share/crossfire/" \;
 echo "  Maps and arch copied."
 
 # Step 7d: Bundle Python standard library into staging
