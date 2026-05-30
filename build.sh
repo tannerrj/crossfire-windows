@@ -60,7 +60,7 @@ make -j$(nproc) -C server
 
 # Step 5: Build crossfire.dll
 echo "[5/9] Building crossfire.dll..."
-mkdir -p /tmp/server_objs
+rm -rf /tmp/server_objs && mkdir -p /tmp/server_objs
 cd /tmp/server_objs
 ar x "$SRCDIR/server/.libs/libserver.a"
 rm -f libserver_la-win32.o
