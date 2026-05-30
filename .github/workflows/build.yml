@@ -213,18 +213,20 @@ jobs:
 
       - name: Build crossfire.dll and plugins
         run: |
+          SRCDIR=$GITHUB_WORKSPACE/crossfire/crossfire-server
+          WINDIR=$GITHUB_WORKSPACE/crossfire-windows
           mkdir -p /tmp/server_objs
           cd /tmp/server_objs
-          ar x ~/crossfire/crossfire-server/server/.libs/libserver.a
-          ar x ~/crossfire/crossfire-server/server/.libs/libserver.a libserver_la-server.o
+          ar x $SRCDIR/server/.libs/libserver.a
+          ar x $SRCDIR/server/.libs/libserver.a libserver_la-server.o
           rm -f libserver_la-win32.o
 
           g++ -c -D_GNU_SOURCE \
-            -I~/crossfire/crossfire-server/include \
-            ~/crossfire-windows/installer/win32_stub.cpp \
+            -I$SRCDIR/include \
+            $WINDIR/installer/win32_stub.cpp \
             -o /tmp/win32_stub.o
 
-          cd ~/crossfire/crossfire-server
+          cd $SRCDIR
           g++ -shared -D_GNU_SOURCE \
             -Wl,--whole-archive common/.libs/libcross.a random_maps/.libs/librandom_map.a \
             -Wl,--no-whole-archive /tmp/server_objs/*.o /tmp/win32_stub.o \
@@ -233,50 +235,50 @@ jobs:
             -Wl,--allow-shlib-undefined \
             -Wl,--out-implib,crossfire.dll.a -o crossfire.dll
 
-          cd ~/crossfire/crossfire-server/plugins/cfanim
+          cd $SRCDIR/plugins/cfanim
           g++ -shared -D_GNU_SOURCE \
             -I../../include -I./include -I../common/include \
             cfanim.cpp ../common/plugin_common.cpp \
-            ~/crossfire/crossfire-server/crossfire.dll.a \
+            $SRCDIR/crossfire.dll.a \
             -lsqlite3 -lws2_32 -Wl,--enable-auto-image-base \
             -Wl,--out-implib,cfanim.dll.a -o cfanim.dll
 
-          cd ~/crossfire/crossfire-server/plugins/cfpython
+          cd $SRCDIR/plugins/cfpython
           g++ -shared -D_GNU_SOURCE \
             -I../../include -I./include -I../common/include \
-            -IC:/msys64/ucrt64/include/python3.14 \
+            -I/ucrt64/include/python3.14 \
             cfpython.cpp cfpython_archetype.cpp cfpython_map.cpp \
             cfpython_object.cpp cfpython_party.cpp cfpython_region.cpp \
             cjson.cpp ../common/plugin_common.cpp \
-            ~/crossfire/crossfire-server/crossfire.dll.a \
+            $SRCDIR/crossfire.dll.a \
             -lpython3.14 -lsqlite3 -lws2_32 -Wl,--enable-auto-image-base \
             -Wl,--out-implib,cfpython.dll.a -o cfpython.dll
 
       - name: Install server
         run: |
-          cd ~/crossfire/crossfire-server
+          cd $GITHUB_WORKSPACE/crossfire/crossfire-server
           make install DESTDIR=$HOME/crossfire-staging
 
       - name: Copy maps and arch to staging
         run: |
           mkdir -p ~/crossfire-staging/usr/local/crossfire/share/crossfire/maps
-          cp -r ~/crossfire/crossfire-maps/. \
+          cp -r $GITHUB_WORKSPACE/crossfire/crossfire-maps/. \
             ~/crossfire-staging/usr/local/crossfire/share/crossfire/maps/
-          cp -r ~/crossfire/crossfire-arch/. \
+          cp -r $GITHUB_WORKSPACE/crossfire/crossfire-arch/. \
             ~/crossfire-staging/usr/local/crossfire/share/crossfire/
 
       - name: Copy built DLLs to staging
         run: |
-          cp ~/crossfire/crossfire-server/crossfire.dll \
+          cp $GITHUB_WORKSPACE/crossfire/crossfire-server/crossfire.dll \
             ~/crossfire-staging/usr/local/crossfire/bin/crossfire.dll
-          cp ~/crossfire/crossfire-server/plugins/cfanim/cfanim.dll \
+          cp $GITHUB_WORKSPACE/crossfire/crossfire-server/plugins/cfanim/cfanim.dll \
             ~/crossfire-staging/usr/local/crossfire/lib/crossfire/plugins/cfanim.dll
-          cp ~/crossfire/crossfire-server/plugins/cfpython/cfpython.dll \
+          cp $GITHUB_WORKSPACE/crossfire/crossfire-server/plugins/cfpython/cfpython.dll \
             ~/crossfire-staging/usr/local/crossfire/lib/crossfire/plugins/cfpython.dll
 
       - name: Bundle Python stdlib
         run: |
-          PYLIB=/c/msys64/ucrt64/lib/python3.14
+          PYLIB=/ucrt64/lib/python3.14
           STAGING=~/crossfire-staging/usr/local/crossfire/lib/python3.14
           mkdir -p $STAGING/encodings $STAGING/importlib \
             $STAGING/collections $STAGING/sqlite3 \
@@ -292,13 +294,13 @@ jobs:
       - name: Get version
         id: version
         run: |
-          GITVER="git-$(git -C ~/crossfire/crossfire-server log --format='%h' -1 | cut -c1-7)"
+          GITVER="git-$(git -C $GITHUB_WORKSPACE/crossfire/crossfire-server log --format='%h' -1 | cut -c1-7)"
           echo "GITVER=$GITVER" >> $GITHUB_OUTPUT
           echo "Version: $GITVER"
 
       - name: Generate NSIS script
         run: |
-          python3 ~/crossfire-windows/installer/write_nsi.py \
+          python3 $GITHUB_WORKSPACE/crossfire-windows/installer/write_nsi.py \
             "${{ steps.version.outputs.GITVER }}" \
             "$(cygpath -m ~/crossfire-installer.nsi)"
 
