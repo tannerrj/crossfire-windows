@@ -6,6 +6,8 @@
 set -e
 
 SRCDIR="$HOME/crossfire/crossfire-server"
+ARCHDIR="$HOME/crossfire/crossfire-arch"
+MAPSDIR="$HOME/crossfire/crossfire-maps"
 STAGINGDIR="$HOME/crossfire-staging/usr/local/crossfire"
 PATCHDIR="$(dirname "$0")/patches"
 INSTALLERDIR="$(dirname "$0")/installer"
@@ -32,6 +34,27 @@ if [ ! -f "$SRCDIR/configure.ac" ]; then
 else
     echo "[1/9] Source already present at $SRCDIR, skipping clone."
 fi
+
+# Step 1b: Clone arch and maps if not present (needed for make install / installer)
+if [ ! -f "$ARCHDIR/crossfire.arc" ]; then
+    echo "[1b/9] Cloning Crossfire archetypes (~20MB)..."
+    mkdir -p "$HOME/crossfire"
+    git clone https://git.code.sf.net/p/crossfire/crossfire-arch "$ARCHDIR"
+else
+    echo "[1b/9] Archetypes already present, skipping clone."
+fi
+
+if [ ! -d "$MAPSDIR/scorn" ]; then
+    echo "[1c/9] Cloning Crossfire maps (~800MB, this will take a while)..."
+    mkdir -p "$HOME/crossfire"
+    git clone https://git.code.sf.net/p/crossfire/crossfire-maps "$MAPSDIR"
+else
+    echo "[1c/9] Maps already present, skipping clone."
+fi
+
+# Symlink arch and maps into the source tree so make install works
+ln -sfn "$ARCHDIR" "$SRCDIR/lib/arch"
+ln -sfn "$MAPSDIR" "$SRCDIR/lib/maps"
 
 # Step 2: Apply patches
 echo "[2/9] Applying patches..."
