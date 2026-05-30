@@ -154,6 +154,22 @@ cp -v "$SRCDIR/plugins/cfpython/cfpython.dll" \
     "$STAGINGDIR/lib/crossfire/plugins/cfpython.dll" 2>/dev/null || true
 echo "  Staging directory synced."
 
+# Step 7b: Bundle Python standard library into staging
+echo "[7b/9] Bundling Python stdlib..."
+PYLIB=/c/msys64/ucrt64/lib/python3.14
+PYSTAGING="$STAGINGDIR/lib/python3.14"
+mkdir -p "$PYSTAGING/encodings" "$PYSTAGING/importlib" \
+    "$PYSTAGING/collections" "$PYSTAGING/sqlite3" \
+    "$PYSTAGING/dbm" "$PYSTAGING/lib-dynload"
+cp "$PYLIB/"*.py "$PYSTAGING/"
+cp -r "$PYLIB/encodings/." "$PYSTAGING/encodings/"
+cp -r "$PYLIB/importlib/." "$PYSTAGING/importlib/"
+cp -r "$PYLIB/collections/." "$PYSTAGING/collections/"
+cp -r "$PYLIB/sqlite3/." "$PYSTAGING/sqlite3/"
+cp -r "$PYLIB/dbm/." "$PYSTAGING/dbm/"
+cp "$PYLIB/lib-dynload/"*.pyd "$PYSTAGING/lib-dynload/"
+echo "  Python stdlib bundled."
+
 # Step 8: Generate NSIS installer script
 echo "[8/9] Generating NSIS installer script..."
 cd "$BUILDDIR"
