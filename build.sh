@@ -76,6 +76,7 @@ g++ -shared \
     random_maps/.libs/librandom_map.a \
     -Wl,--no-whole-archive \
     /tmp/server_objs/*.o \
+    server/main.o \
     /tmp/win32_stub.o \
     -lsqlite3 -lws2_32 -lpython3.14 \
     -Wl,--enable-auto-image-base \

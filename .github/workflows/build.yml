@@ -91,7 +91,7 @@ jobs:
           cd $SRCDIR
           g++ -shared -D_GNU_SOURCE \
             -Wl,--whole-archive common/.libs/libcross.a random_maps/.libs/librandom_map.a \
-            -Wl,--no-whole-archive /tmp/server_objs/*.o /tmp/win32_stub.o \
+            -Wl,--no-whole-archive /tmp/server_objs/*.o $SRCDIR/server/main.o /tmp/win32_stub.o \
             -lsqlite3 -lws2_32 -lpython3.14 \
             -Wl,--enable-auto-image-base \
             -Wl,--allow-shlib-undefined \
@@ -216,7 +216,7 @@ jobs:
           cd $SRCDIR
           g++ -shared -D_GNU_SOURCE \
             -Wl,--whole-archive common/.libs/libcross.a random_maps/.libs/librandom_map.a \
-            -Wl,--no-whole-archive /tmp/server_objs/*.o /tmp/win32_stub.o \
+            -Wl,--no-whole-archive /tmp/server_objs/*.o $SRCDIR/server/main.o /tmp/win32_stub.o \
             -lsqlite3 -lws2_32 -lpython3.14 \
             -Wl,--enable-auto-image-base \
             -Wl,--allow-shlib-undefined \
