@@ -38,6 +38,7 @@ fi
 # Step 1b: Clone arch and maps if not present (needed for make install / installer)
 if [ ! -f "$ARCHDIR/crossfire.arc" ]; then
     echo "[1b/9] Cloning Crossfire archetypes (~20MB)..."
+    rm -rf "$ARCHDIR"
     mkdir -p "$HOME/crossfire"
     git clone https://git.code.sf.net/p/crossfire/crossfire-arch "$ARCHDIR"
 else
@@ -46,6 +47,7 @@ fi
 
 if [ ! -d "$MAPSDIR/scorn" ]; then
     echo "[1c/9] Cloning Crossfire maps (~800MB, this will take a while)..."
+    rm -rf "$MAPSDIR"
     mkdir -p "$HOME/crossfire"
     git clone https://git.code.sf.net/p/crossfire/crossfire-maps "$MAPSDIR"
 else
