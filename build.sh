@@ -55,8 +55,9 @@ else
 fi
 
 # Symlink arch and maps into the source tree so make install works
-ln -sfn "$ARCHDIR" "$SRCDIR/lib/arch"
-ln -sfn "$MAPSDIR" "$SRCDIR/lib/maps"
+rm -rf "$SRCDIR/lib/arch" "$SRCDIR/lib/maps"
+ln -s "$ARCHDIR" "$SRCDIR/lib/arch"
+ln -s "$MAPSDIR" "$SRCDIR/lib/maps"
 
 # Step 2: Apply patches
 echo "[2/9] Applying patches..."
