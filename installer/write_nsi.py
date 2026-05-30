@@ -38,7 +38,6 @@ SetCompressor /SOLID lzma
 Section "Crossfire Server" SecMain
 
     SectionIn RO
-    SectionDescription "Core server files, game data, and Start Menu shortcuts (required)"
 
     SetOutPath "$INSTDIR\\bin"
     File "${STAGING}\\bin\\crossfire-server.exe"
@@ -244,8 +243,6 @@ Section "Crossfire Server" SecMain
 SectionEnd
 
 Section /o "Install as Windows Service" SecService
-
-    SectionDescription "Register Crossfire Server as a Windows service so it starts automatically at boot"
 
     ; Register the service (runs as admin since installer requests admin)
     ExecWait '"$INSTDIR\\bin\\crossfire-server.exe" -regsrv'
