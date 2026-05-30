@@ -60,6 +60,7 @@ jobs:
           ./autogen.sh
           ./configure --prefix="/usr/local/crossfire" \
             --disable-shared --enable-static \
+            --without-gd \
             CXXFLAGS="-D_GNU_SOURCE" CFLAGS="-D_GNU_SOURCE"
 
       - name: Build server
@@ -190,6 +191,7 @@ jobs:
           ./autogen.sh
           ./configure --prefix="/usr/local/crossfire" \
             --disable-shared --enable-static \
+            --without-gd \
             CXXFLAGS="-D_GNU_SOURCE" CFLAGS="-D_GNU_SOURCE"
           make -j$(nproc) -C include
           make -j$(nproc) -C common

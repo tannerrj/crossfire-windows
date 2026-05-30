@@ -36,9 +36,10 @@ done
 
 # Step 3: Configure
 echo "[3/9] Running configure..."
-./autogen.sh 2>/dev/null || true
+./autogen.sh
 ./configure --prefix="/usr/local/crossfire" \
     --disable-shared --enable-static \
+    --without-gd \
     CXXFLAGS="-D_GNU_SOURCE" CFLAGS="-D_GNU_SOURCE"
 
 # Step 4: Build server
