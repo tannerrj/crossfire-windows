@@ -14,6 +14,15 @@ BUILDDIR="$HOME"
 echo "=== Crossfire Windows Build Script ==="
 echo ""
 
+# Step 0: Ensure required packages are installed
+echo "[0/9] Checking dependencies..."
+pacman -S --needed --noconfirm \
+    mingw-w64-ucrt-x86_64-gcc \
+    mingw-w64-ucrt-x86_64-python3 \
+    mingw-w64-ucrt-x86_64-sqlite3 \
+    mingw-w64-ucrt-x86_64-nsis \
+    autoconf automake libtool make git pkgconf flex
+
 # Step 1: Clone source if not present or empty
 if [ ! -f "$SRCDIR/configure.ac" ]; then
     echo "[1/9] Cloning Crossfire server source..."

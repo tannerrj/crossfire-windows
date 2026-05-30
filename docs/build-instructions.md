@@ -13,7 +13,7 @@ pacman -S --needed \
     mingw-w64-ucrt-x86_64-python3 \
     mingw-w64-ucrt-x86_64-sqlite3 \
     mingw-w64-ucrt-x86_64-nsis \
-    autoconf automake libtool make git
+    autoconf automake libtool make git pkgconf flex
 ```
 
 ### 3. Clone this repository
