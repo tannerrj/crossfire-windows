@@ -53,7 +53,10 @@ autoreconf -i
 
 # Step 4: Build server
 echo "[4/9] Building server..."
-make -j$(nproc)
+make -j$(nproc) -C include
+make -j$(nproc) -C common
+make -j$(nproc) -C random_maps
+make -j$(nproc) -C server
 
 # Step 5: Build crossfire.dll
 echo "[5/9] Building crossfire.dll..."
