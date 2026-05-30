@@ -155,7 +155,14 @@ cp -v "$SRCDIR/plugins/cfpython/cfpython.dll" \
     "$STAGINGDIR/lib/crossfire/plugins/cfpython.dll" 2>/dev/null || true
 echo "  Staging directory synced."
 
-# Step 7b: Bundle Python standard library into staging
+# Step 7b: Copy maps and arch into staging
+echo "[7b/9] Copying maps and arch to staging..."
+mkdir -p "$STAGINGDIR/share/crossfire/maps"
+cp -r "$MAPSDIR/." "$STAGINGDIR/share/crossfire/maps/"
+cp -r "$ARCHDIR/." "$STAGINGDIR/share/crossfire/"
+echo "  Maps and arch copied."
+
+# Step 7d: Bundle Python standard library into staging
 echo "[7b/9] Bundling Python stdlib..."
 PYLIB=/c/msys64/ucrt64/lib/python3.14
 PYSTAGING="$STAGINGDIR/lib/python3.14"
