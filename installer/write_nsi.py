@@ -25,7 +25,9 @@ RequestExecutionLevel admin
 SetCompressor /SOLID lzma
 
 !include "MUI2.nsh"
+!include "Sections.nsh"
 !insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
@@ -36,6 +38,7 @@ SetCompressor /SOLID lzma
 Section "Crossfire Server" SecMain
 
     SectionIn RO
+    SectionDescription "Core server files, game data, and Start Menu shortcuts (required)"
 
     SetOutPath "$INSTDIR\\bin"
     File "${STAGING}\\bin\\crossfire-server.exe"
@@ -240,6 +243,38 @@ Section "Crossfire Server" SecMain
 
 SectionEnd
 
+Section /o "Install as Windows Service" SecService
+
+    SectionDescription "Register Crossfire Server as a Windows service so it starts automatically at boot"
+
+    ; Register the service (runs as admin since installer requests admin)
+    ExecWait '"$INSTDIR\\bin\\crossfire-server.exe" -regsrv'
+
+    ; Start Menu shortcuts for service management
+    SetShellVarContext all
+    CreateShortcut "$SMPROGRAMS\\Crossfire Server\\Start Service.lnk" \\
+        "$SYSDIR\\sc.exe" "start CrossfireServer" \\
+        "$INSTDIR\\bin\\crossfire-server.exe" 0
+    CreateShortcut "$SMPROGRAMS\\Crossfire Server\\Stop Service.lnk" \\
+        "$SYSDIR\\sc.exe" "stop CrossfireServer" \\
+        "$INSTDIR\\bin\\crossfire-server.exe" 0
+
+    SetShellVarContext current
+    CreateShortcut "$SMPROGRAMS\\Crossfire Server\\Start Service.lnk" \\
+        "$SYSDIR\\sc.exe" "start CrossfireServer" \\
+        "$INSTDIR\\bin\\crossfire-server.exe" 0
+    CreateShortcut "$SMPROGRAMS\\Crossfire Server\\Stop Service.lnk" \\
+        "$SYSDIR\\sc.exe" "stop CrossfireServer" \\
+        "$INSTDIR\\bin\\crossfire-server.exe" 0
+
+SectionEnd
+
+; Section descriptions shown in the components page tooltip
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecMain}    "Core server files, game data, and Start Menu shortcuts (required)"
+    !insertmacro MUI_DESCRIPTION_TEXT ${SecService} "Register Crossfire Server as a Windows service so it starts automatically at boot"
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
 Section "Uninstall"
 
     SetShellVarContext all
@@ -252,13 +287,20 @@ Section "Uninstall"
     RMDir "$INSTDIR"
 
     Delete "$SMPROGRAMS\\Crossfire Server\\Start Server.lnk"
+    Delete "$SMPROGRAMS\\Crossfire Server\\Start Service.lnk"
+    Delete "$SMPROGRAMS\\Crossfire Server\\Stop Service.lnk"
     Delete "$SMPROGRAMS\\Crossfire Server\\Uninstall.lnk"
     RMDir "$SMPROGRAMS\\Crossfire Server"
 
     SetShellVarContext current
     Delete "$SMPROGRAMS\\Crossfire Server\\Start Server.lnk"
+    Delete "$SMPROGRAMS\\Crossfire Server\\Start Service.lnk"
+    Delete "$SMPROGRAMS\\Crossfire Server\\Stop Service.lnk"
     Delete "$SMPROGRAMS\\Crossfire Server\\Uninstall.lnk"
     RMDir "$SMPROGRAMS\\Crossfire Server"
+
+    ; Remove Windows service if registered (stops it first, then deletes)
+    ExecWait '"$INSTDIR\\bin\\crossfire-server.exe" -unregsrv'
 
     ExecWait 'netsh advfirewall firewall delete rule name="Crossfire Server"'
 
