@@ -5,6 +5,82 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [v1.75.0-git-2f3c503-win2] - 2026-05-29
+
+### Fixed
+- **accounts.tmp Access Denied permanently fixed** — root cause was
+  `start-server.bat` creating an `accounts` directory via `mkdir`, but
+  the server expects `accounts` to be a plain file. `MoveFileExA` cannot
+  replace a directory with a file, causing "Access is denied" on every
+  first connect on a clean install.
+  - Fix 1: Removed `mkdir accounts` from `start-server.bat`
+  - Fix 2: Replaced `MoveFileExA` with `CopyFileA + DeleteFileA` in
+    `output_file.cpp` to avoid inherited ACL issues in ProgramData
+
+### Added
+- **GitHub Actions CI** — automated build on every push to `main`
+  - `compile` job: builds server + all DLLs using GitHub mirrors (~7 min)
+  - `installer` job: full build with maps/arch, produces `.exe` installer,
+    attaches to GitHub Release automatically on version tags
+  - Uses `windows-2025` runner, Node.js 24
+  - Sources: `crossfire-server-mirror`, `crossfire-arch-mirror`,
+    `crossfire-maps-mirror`
+- CI build status badge added to README
+
+### Changed
+- `output_file.cpp.diff`: replaced `MoveFileExA` retry loop with
+  `CopyFileA + DeleteFileA` for more reliable file writes on Windows
+- `write_nsi.py`: removed erroneous `mkdir accounts` from `start-server.bat`
+- `write_nsi.py`: fixed duplicate `takeown` call
+- `write_nsi.py`: moved `icacls` to run after all directories are created
+- README, build-instructions.md, AGENTS.md updated for upstream base
+  `2f3c503af`
+
+### Patches Applied
+| Patch | Description |
+|---|---|
+| `output_file.cpp.diff` | Atomic write via `CopyFileA + DeleteFileA` |
+| `plugins.cpp.diff` | Win32 directory scan + absolute plugin paths |
+| `init.cpp.diff` | WSAStartup error checking + WSAGetLastError |
+| `loop.cpp.diff` | Enhanced Winsock `select()` error handling |
+
+---
+
+## [v1.75.0-git-2f3c503] - 2026-05-27
+
+### Upstream Base
+- Crossfire server commit `2f3c503af` (v1.75.0-1756)
+- Upstream changes since previous base (`a28489bc1`):
+  - `7411d10e4` Add code to handle Winsock quirks on WIN32
+  - `0312bf5a3` Install lib/def_help with CMake
+  - `705534ece` Add media tag for command help
+  - `9e860b44f` Use caster level when curing disease
+  - `ef30350ab` Improve cure disease result messages
+  - `088e59465` Add GDB pretty-printing script
+  - `1254bce3a` Make object_matches_string match tags
+  - `adc2015e3` Fix compiler warning
+  - `a067aa0b0` Fix deprecation warnings by updating to curl_mime
+  - `bc4accaef` Fix non-deterministic map ordering in JSON output
+  - `a1494e4a3` Fix C++14 compatibility
+  - `2f3c503af` Skip new lines in accounts file
+
+### Changed
+- Updated all four patches to apply cleanly against new upstream base
+- `loop.cpp.diff` enhanced: upstream added empty fd_set check and basic
+  Winsock error logging; our patch now adds specific handling for error
+  codes 10004 (WSAEINTR), 10038 (WSAENOTSOCK), 10022 (WSAEINVAL)
+- Fixed SyntaxWarning for invalid escape sequence in write_nsi.py
+
+### Patches Applied
+| Patch | Description |
+|---|---|
+| `output_file.cpp.diff` | Atomic rename via `DeleteFileA` + `MoveFileExA` |
+| `plugins.cpp.diff` | Win32 directory scan + absolute plugin paths |
+| `init.cpp.diff` | WSAStartup error checking + WSAGetLastError |
+| `loop.cpp.diff` | Enhanced Winsock `select()` error handling |
+
+---
+
 ## [v1.75.0-git-a28489b] - 2026-05-12
 
 ### First portable Windows release
@@ -89,79 +165,5 @@ The following patches from this project were accepted upstream:
 ---
 
 [v1.75.0-git-a28489b]: https://github.com/tannerrj/crossfire-windows/releases/tag/v1.75.0-git-a28489b
-
----
-
-## [v1.75.0-git-2f3c503] - 2026-05-27
-
-### Upstream Base
-- Crossfire server commit `2f3c503af` (v1.75.0-1756)
-- Upstream changes since previous base (`a28489bc1`):
-  - `7411d10e4` Add code to handle Winsock quirks on WIN32
-  - `0312bf5a3` Install lib/def_help with CMake
-  - `705534ece` Add media tag for command help
-  - `9e860b44f` Use caster level when curing disease
-  - `ef30350ab` Improve cure disease result messages
-  - `088e59465` Add GDB pretty-printing script
-  - `1254bce3a` Make object_matches_string match tags
-  - `adc2015e3` Fix compiler warning
-  - `a067aa0b0` Fix deprecation warnings by updating to curl_mime
-  - `bc4accaef` Fix non-deterministic map ordering in JSON output
-  - `a1494e4a3` Fix C++14 compatibility
-  - `2f3c503af` Skip new lines in accounts file
-
-### Changed
-- Updated all four patches to apply cleanly against new upstream base
-- `loop.cpp.diff` enhanced: upstream added empty fd_set check and basic
-  Winsock error logging; our patch now adds specific handling for error
-  codes 10004 (WSAEINTR), 10038 (WSAENOTSOCK), 10022 (WSAEINVAL)
-- Fixed SyntaxWarning for invalid escape sequence in write_nsi.py
-
-### Patches Applied
-| Patch | Description |
-|---|---|
-| `output_file.cpp.diff` | Atomic rename via `DeleteFileA` + `MoveFileExA` |
-| `plugins.cpp.diff` | Win32 directory scan + absolute plugin paths |
-| `init.cpp.diff` | WSAStartup error checking + WSAGetLastError |
-| `loop.cpp.diff` | Enhanced Winsock `select()` error handling |
-
----
-
-## [v1.75.0-git-2f3c503-win2] - 2026-05-29
-
-### Fixed
-- **accounts.tmp Access Denied permanently fixed** — root cause was
-  `start-server.bat` creating an `accounts` directory via `mkdir`, but
-  the server expects `accounts` to be a plain file. `MoveFileExA` cannot
-  replace a directory with a file, causing "Access is denied" on every
-  first connect on a clean install.
-  - Fix 1: Removed `mkdir accounts` from `start-server.bat`
-  - Fix 2: Replaced `MoveFileExA` with `CopyFileA + DeleteFileA` in
-    `output_file.cpp` to avoid inherited ACL issues in ProgramData
-
-### Added
-- **GitHub Actions CI** — automated build on every push to `main`
-  - `compile` job: builds server + all DLLs using GitHub mirrors (~7 min)
-  - `installer` job: full build with maps/arch, produces `.exe` installer,
-    attaches to GitHub Release automatically on version tags
-  - Uses `windows-2025` runner, Node.js 24
-  - Sources: `crossfire-server-mirror`, `crossfire-arch-mirror`,
-    `crossfire-maps-mirror`
-- CI build status badge added to README
-
-### Changed
-- `output_file.cpp.diff`: replaced `MoveFileExA` retry loop with
-  `CopyFileA + DeleteFileA` for more reliable file writes on Windows
-- `write_nsi.py`: removed erroneous `mkdir accounts` from `start-server.bat`
-- `write_nsi.py`: fixed duplicate `takeown` call
-- `write_nsi.py`: moved `icacls` to run after all directories are created
-- README, build-instructions.md, AGENTS.md updated for upstream base
-  `2f3c503af`
-
-### Patches Applied
-| Patch | Description |
-|---|---|
-| `output_file.cpp.diff` | Atomic write via `CopyFileA + DeleteFileA` |
-| `plugins.cpp.diff` | Win32 directory scan + absolute plugin paths |
-| `init.cpp.diff` | WSAStartup error checking + WSAGetLastError |
-| `loop.cpp.diff` | Enhanced Winsock `select()` error handling |
+[v1.75.0-git-2f3c503]: https://github.com/tannerrj/crossfire-windows/releases/tag/v1.75.0-git-2f3c503
+[v1.75.0-git-2f3c503-win2]: https://github.com/tannerrj/crossfire-windows/releases/tag/v1.75.0-git-2f3c503-win2

@@ -7,25 +7,25 @@ Download and install from https://www.msys2.org/
 Open the **UCRT64** shell for all commands.
 
 ### 2. Install dependencies
-\`\`\`bash
+```bash
 pacman -S --needed \
     mingw-w64-ucrt-x86_64-gcc \
     mingw-w64-ucrt-x86_64-python3 \
     mingw-w64-ucrt-x86_64-sqlite3 \
     mingw-w64-ucrt-x86_64-nsis \
     autoconf automake libtool make git
-\`\`\`
+```
 
 ### 3. Clone this repository
-\`\`\`bash
+```bash
 cd ~
 git clone https://github.com/tannerrj/crossfire-windows.git
-\`\`\`
+```
 
 ### 4. Run the build script
-\`\`\`bash
+```bash
 bash ~/crossfire-windows/build.sh
-\`\`\`
+```
 
 The script will:
 - Clone the Crossfire server source from SourceForge
@@ -40,8 +40,8 @@ The script will:
 
 ## Manual Build Steps
 
-### Step 1 — Clone and patch Crossfire source
-\`\`\`bash
+### Step 1 - Clone and patch Crossfire source
+```bash
 git clone https://git.code.sf.net/p/crossfire/crossfire-server \
     ~/crossfire/crossfire-server
 cd ~/crossfire/crossfire-server
@@ -49,19 +49,19 @@ git apply ~/crossfire-windows/patches/output_file.cpp.diff
 git apply ~/crossfire-windows/patches/plugins.cpp.diff
 git apply ~/crossfire-windows/patches/init.cpp.diff
 git apply ~/crossfire-windows/patches/loop.cpp.diff
-\`\`\`
+```
 
-### Step 2 — Configure and compile
-\`\`\`bash
+### Step 2 - Configure and compile
+```bash
 cd ~/crossfire/crossfire-server
 ./autogen.sh
 ./configure --prefix="/usr/local/crossfire" \
     CXXFLAGS="-D_GNU_SOURCE" CFLAGS="-D_GNU_SOURCE"
 make -j$(nproc)
-\`\`\`
+```
 
-### Step 3 — Build crossfire.dll
-\`\`\`bash
+### Step 3 - Build crossfire.dll
+```bash
 mkdir -p /tmp/server_objs && cd /tmp/server_objs
 ar x ~/crossfire/crossfire-server/server/.libs/libserver.a
 ar x ~/crossfire/crossfire-server/server/.libs/libserver.a libserver_la-server.o
@@ -78,10 +78,10 @@ g++ -shared -D_GNU_SOURCE \
     -Wl,--enable-auto-image-base \
     -Wl,--allow-shlib-undefined \
     -Wl,--out-implib,crossfire.dll.a -o crossfire.dll
-\`\`\`
+```
 
-### Step 4 — Build plugin DLLs
-\`\`\`bash
+### Step 4 - Build plugin DLLs
+```bash
 cd ~/crossfire/crossfire-server/plugins/cfanim
 g++ -shared -D_GNU_SOURCE -I../../include -I./include -I../common/include \
     cfanim.cpp ../common/plugin_common.cpp \
@@ -98,10 +98,10 @@ g++ -shared -D_GNU_SOURCE -I../../include -I./include -I../common/include \
     ~/crossfire/crossfire-server/crossfire.dll.a \
     -lpython3.14 -lsqlite3 -lws2_32 -Wl,--enable-auto-image-base \
     -Wl,--out-implib,cfpython.dll.a -o cfpython.dll
-\`\`\`
+```
 
-### Step 5 — Sync staging directory
-\`\`\`bash
+### Step 5 - Sync staging directory
+```bash
 cd ~/crossfire/crossfire-server
 cp server/crossfire-server.exe \
     ~/crossfire-staging/usr/local/crossfire/bin/crossfire-server.exe
@@ -111,17 +111,17 @@ cp plugins/cfanim/cfanim.dll \
     ~/crossfire-staging/usr/local/crossfire/lib/crossfire/plugins/cfanim.dll
 cp plugins/cfpython/cfpython.dll \
     ~/crossfire-staging/usr/local/crossfire/lib/crossfire/plugins/cfpython.dll
-\`\`\`
+```
 
-### Step 6 — Build installer
-\`\`\`bash
+### Step 6 - Build installer
+```bash
 cd /home/leaf
 GITVER="git-$(git -C ~/crossfire/crossfire-server log --format='%h' -1 | cut -c1-7)"
 python3 ~/crossfire-windows/installer/write_nsi.py "$GITVER" \
     "$(cygpath -m ~/crossfire-installer.nsi)"
 makensis crossfire-installer.nsi
 cp ~/CrossfireServer-${GITVER}-Setup.exe /c/Users/leaf/Desktop/
-\`\`\`
+```
 
 ## Installed Files
 
@@ -144,11 +144,11 @@ The server listens on TCP port **13327**.
 
 After every installer rebuild and fresh installation, always verify:
 
-1. **Start Menu entry exists** — Check All Apps -> C -> Crossfire Server.
+1. **Start Menu entry exists** - Check All Apps -> C -> Crossfire Server.
    Note: Start Menu search may not index the app on some Windows 11 installs
    (see Known Issues below).
 
-2. **Start Menu shortcuts work** — Click Start Server and confirm:
+2. **Start Menu shortcuts work** - Click Start Server and confirm:
    - `plugins: loading cfanim.dll`
    - `plugins: loading cfpython.dll`
    - `CFPython: Initializing CFBank`
@@ -156,14 +156,14 @@ After every installer rebuild and fresh installation, always verify:
    - `CFPython: Initializing CFShop`
    - `Waiting for connections`
 
-3. **Plugin DLLs are current** — Timestamps on these should match build date:
+3. **Plugin DLLs are current** - Timestamps on these should match build date:
    - `C:\Program Files\Crossfire Server\lib\crossfire\plugins\cfanim.dll`
    - `C:\Program Files\Crossfire Server\lib\crossfire\plugins\cfpython.dll`
 
-4. **crossfire.dll is current** — Timestamp on
+4. **crossfire.dll is current** - Timestamp on
    `C:\Program Files\Crossfire Server\bin\crossfire.dll` should match build date.
 
-5. **Player login works** — Connect a client, create a character, log out,
+5. **Player login works** - Connect a client, create a character, log out,
    reconnect and log back in with the same character.
 
 ## Known Issues

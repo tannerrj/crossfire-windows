@@ -15,11 +15,8 @@ crossfire-windows/
 ├── README.md                   ← Project overview and quick start
 ├── build.sh                    ← Automated build script (MSYS2 UCRT64)
 ├── patches/                    ← Git diff patches for Windows compatibility
-
 │   ├── output_file.cpp.diff    ← Fixes atomic rename with MoveFileExA()
-
 │   ├── plugins.cpp.diff        ← Win32 directory scan + absolute paths
-
 │   ├── init.cpp.diff           ← Fixes Winsock initialization/error reporting
 │   └── loop.cpp.diff           ← Fixes select() error handling for Winsock
 ├── installer/
@@ -74,7 +71,7 @@ plugin DLLs link against.
 1. Extract all objects from `server/.libs/libserver.a` excluding
    `libserver_la-win32.o` and `libserver_la-server.o`
 2. Compile `installer/win32_stub.cpp` to provide `bRunning`,
-   `service_register()`, `service_unregister()`, `service_handle()\
+   `service_register()`, `service_unregister()`, `service_handle()`
 3. Link with `--whole-archive` against `libcross.a` and `librandom_map.a`
 4. Link remaining server objects and the stub
 5. Output: `crossfire.dll` + `crossfire.dll.a` (import library)
