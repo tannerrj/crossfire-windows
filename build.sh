@@ -181,7 +181,7 @@ echo "  Python stdlib bundled."
 # Step 8: Generate NSIS installer script
 echo "[8/9] Generating NSIS installer script..."
 cd "$BUILDDIR"
-GITVER="git-$(git -C "$SRCDIR" log --format='%h' -1 | cut -c1-7)"
+GITVER="git-$(git -C "$(dirname "$0")" log --format='%h' -1 | cut -c1-7)"
 echo "  Version: $GITVER"
 python3 "$INSTALLERDIR/write_nsi.py" "$GITVER" \
     "$(cygpath -m "$BUILDDIR/crossfire-installer.nsi")"

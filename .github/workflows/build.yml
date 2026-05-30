@@ -281,7 +281,7 @@ jobs:
       - name: Get version
         id: version
         run: |
-          GITVER="git-$(git -C $GITHUB_WORKSPACE/crossfire/crossfire-server log --format='%h' -1 | cut -c1-7)"
+          GITVER="git-$(git -C $GITHUB_WORKSPACE/crossfire-windows log --format='%h' -1 | cut -c1-7)"
           echo "GITVER=$GITVER" >> $GITHUB_OUTPUT
           echo "Version: $GITVER"
 
