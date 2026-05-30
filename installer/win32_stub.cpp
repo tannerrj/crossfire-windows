@@ -24,7 +24,7 @@ static void WINAPI ServiceCtrlHandler(DWORD ctrl) {
 
 extern int main(int argc, char **argv);
 
-static void WINAPI ServiceMain(DWORD argc, LPTSTR *argv) {
+static void WINAPI ServiceMain(DWORD argc, LPWSTR *argv) {
     g_Status.dwServiceType             = SERVICE_WIN32_OWN_PROCESS;
     g_Status.dwCurrentState            = SERVICE_START_PENDING;
     g_Status.dwControlsAccepted        = SERVICE_ACCEPT_STOP;
